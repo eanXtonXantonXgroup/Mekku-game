@@ -58,7 +58,7 @@ button,input{font:inherit}button{border:0;color:white;cursor:pointer;font-weight
 #queueOverlay{position:absolute;z-index:10;inset:0;background:#080d1beF;display:none;place-items:center;text-align:center;padding:20px}
 #queueOverlay .panel{width:min(360px,100%)}
 .spinner{width:38px;height:38px;border:4px solid #435777;border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite;margin:15px auto}@keyframes spin{to{transform:rotate(360deg)}}
-@media(orientation:portrait){#battle:before{content:"Putar HP ke landscape untuk bermain";position:absolute;z-index:20;inset:0;background:#090d1b;color:white;display:grid;place-items:center;text-align:center;padding:30px;font-weight:900;font-size:22px}#battle .hud,#battle #controls,#battle #gameCanvas,#battle #countdown,#battle #battleMsg,#battle #leave,#battle #result,#battle #queueOverlay{display:none!important}}
+@media(orientation:portrait){#battle:before{content:"MEKUU ARENA • Putar HP ke landscape untuk pengalaman terbaik";position:absolute;z-index:2;top:52px;left:50%;transform:translateX(-50%);width:max-content;max-width:92%;background:#0b142bd9;border:1px solid #55e7ff88;color:#dffaff;padding:7px 12px;border-radius:10px;text-align:center;font-size:11px;font-weight:800;pointer-events:none}#controls{transform:scale(.84);transform-origin:bottom center}}
 @media(max-width:600px){.screen{padding:12px}.hero-banner{min-height:155px}.bannerText{max-width:68%;padding:17px}.bannerText p{font-size:11px}.brand{font-size:20px}.profile{padding:6px}.actions{grid-template-columns:repeat(3,50px);gap:5px}.act{width:50px;height:50px}#attack{width:58px;height:58px}#stickArea{width:112px;height:112px}#stick{left:31px;top:31px}}
 </style>
 </head>
@@ -105,6 +105,7 @@ button,input{font:inherit}button{border:0;color:white;cursor:pointer;font-weight
  <div class="pagehead"><h2>PENGATURAN</h2><button class="ghost" data-page="home">✕</button></div>
  <div class="panel"><h3>Kontrol pertandingan</h3><p class="small">Tombol virtual tersedia saat pertandingan. Pilih tata letak kontrol.</p>
  <label class="small">Layout kontrol</label><select id="controlLayout" class="secondary" style="width:100%;margin-top:8px"><option value="classic">Classic — joystick kiri, skill kanan</option><option value="compact">Compact — tombol lebih rapat</option></select>
+ <label class="small" style="display:block;margin-top:14px">Batas frame rate</label><select id="fpsSelect" class="secondary" style="width:100%;margin-top:8px"><option value="30">30 FPS — Hemat</option><option value="60" selected>60 FPS — Seimbang</option></select><p class="small" id="fpsInfo">Memeriksa kemampuan refresh browser...</p>
  <label class="row" style="margin-top:15px"><input type="checkbox" id="soundToggle" checked style="width:auto"> Suara game</label>
  <label class="row"><input type="checkbox" id="vibrateToggle" checked style="width:auto"> Getaran (jika didukung)</label>
  <button class="primary" id="saveSettings" style="margin-top:12px">SIMPAN PENGATURAN</button></div>
@@ -183,6 +184,19 @@ async function buy(type,it){if(type==="hero"&&(profile.heroes||[]).includes(it.i
 $("shopHeroes").onclick=()=>renderShop("hero");$("shopSkins").onclick=()=>renderShop("skin");
 $("saveSettings").onclick=()=>{localStorage.setItem("mekuuLayout",$("controlLayout").value);localStorage.setItem("mekuuSound",$("soundToggle").checked);localStorage.setItem("mekuuVibrate",$("vibrateToggle").checked);toast("Pengaturan disimpan")};
 $("controlLayout").value=localStorage.getItem("mekuuLayout")||"classic";$("soundToggle").checked=localStorage.getItem("mekuuSound")!=="false";$("vibrateToggle").checked=localStorage.getItem("mekuuVibrate")!=="false";
+let measuredHz=60,targetFps=Number(localStorage.getItem("mekuuFps")||60);
+$("fpsSelect").value=String(targetFps);
+async function detectRefreshRate(){
+ const intervals=[];let last=0;
+ await new Promise(resolve=>{const sample=t=>{if(last)intervals.push(t-last);last=t;if(intervals.length<100)requestAnimationFrame(sample);else resolve()};requestAnimationFrame(sample)});
+ const a=intervals.slice(10).sort((x,y)=>x-y),median=a[Math.floor(a.length/2)]||16.67;
+ measuredHz=Math.round(1000/median);
+ if(measuredHz>=85){const opt=document.createElement("option");opt.value="90";opt.textContent="Extreme 90 FPS";$("fpsSelect").append(opt)}
+ $("fpsInfo").textContent=`Refresh browser terukur sekitar ${measuredHz} Hz. Pengukuran dapat berubah mengikuti mode layar dan beban perangkat.`;
+ if(targetFps===90&&measuredHz<85){targetFps=60;$("fpsSelect").value="60"}
+}
+detectRefreshRate();
+$("fpsSelect").onchange=()=>{targetFps=Number($("fpsSelect").value);localStorage.setItem("mekuuFps",String(targetFps));toast("Target "+targetFps+" FPS disimpan")};
 
 function sound(freq=440,dur=.12,type="sine"){if(!$("soundToggle").checked)return;try{audioCtx??=new AudioContext();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(.09,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+dur)}catch{}}
 function vibrate(ms=35){if($("vibrateToggle").checked&&navigator.vibrate)navigator.vibrate(ms)}
@@ -213,7 +227,8 @@ async function watchMatch(id,index){
 }
 function cleanupMatch(){queueUnsub?.();matchUnsub?.();queueUnsub=null;matchUnsub=null;if(queueDoc&&user)deleteDoc(queueDoc).catch(()=>{});queueDoc=null; if(gameLoop)cancelAnimationFrame(gameLoop);gameLoop=null;battle=null;$("queueOverlay").style.display="none";$("result").style.display="none"}
 function startBattle(mode,matchId=null,index=0,matchData=null){
- cleanupGameOnly();battle={mode,matchId,index,me:{x:160,y:0,vx:0,vy:0,hp:100,shield:0,score:0,face:1,ground:true},enemy:{x:500,y:0,vx:0,vy:0,hp:100,shield:0,score:0,face:-1,ground:true},round:1,scores:[0,0],start:Date.now(),lastAttack:0,cooldowns:{s1:0,s2:0,s3:0},ended:false,remote:null};
+ show("battle");
+ cleanupGameOnly();previousFrame=0;battle={mode,matchId,index,me:{x:160,y:0,vx:0,vy:0,hp:100,shield:0,score:0,face:1,ground:true},enemy:{x:500,y:0,vx:0,vy:0,hp:100,shield:0,score:0,face:-1,ground:true},round:1,scores:[0,0],start:Date.now(),lastAttack:0,cooldowns:{s1:0,s2:0,s3:0},ended:false,remote:null};
  if(mode==="pvp"&&matchData?.state){battle.scores=matchData.state.scores||[0,0];battle.round=matchData.state.round||1}
  $("queueOverlay").style.display="none";$("result").style.display="none";$("myHudName").textContent=profile.username;$("enemyHudName").textContent=mode==="bot"?"ARENA BOT":"PLAYER";$("battleMsg").textContent=mode==="bot"?"BOT CHALLENGE":"PLAYER FOUND";sound(660,.2);countdown();
 }
@@ -228,13 +243,20 @@ function draw(){
  for(let i=0;i<12;i++){let x=i*w/10;ctx.fillStyle=i%2?"#31476c":"#202f50";ctx.fillRect(x,floor-70-(i%3)*25,w/14,100)}
  ctx.fillStyle="#182542";ctx.fillRect(0,floor,w,h-floor);ctx.fillStyle="#4b6d91";ctx.fillRect(0,floor,w,3);
  for(let i=0;i<10;i++){ctx.fillStyle="#5deaff22";ctx.fillRect(i*w/10,floor+15,2,45)}
- const drawF=(p,color,skin)=>{let x=p.x,y=floor-p.y;ctx.save();ctx.translate(x,y);ctx.scale(p.face||1,1);
- ctx.fillStyle="#0007";ctx.beginPath();ctx.ellipse(0,2,22,6,0,0,Math.PI*2);ctx.fill();
- ctx.fillStyle=skin==="neon"?"#58f0ff":color;ctx.fillRect(-13,-56,26,42);ctx.fillStyle="#f3c8a9";ctx.beginPath();ctx.arc(0,-68,13,0,Math.PI*2);ctx.fill();
- ctx.fillStyle="#20253e";ctx.fillRect(-12,-82,24,7);ctx.fillStyle="#e7f5ff";ctx.fillRect(5,-70,4,3);
- ctx.strokeStyle=skin==="ember"?"#ff9a4d":"#d9e9ff";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(9,-48);ctx.lineTo(25,-30);ctx.stroke();
- ctx.fillStyle="#263b60";ctx.fillRect(-12,-14,9,14);ctx.fillRect(3,-14,9,14);
- if(p.shield>0){ctx.strokeStyle="#6beaff";ctx.lineWidth=4;ctx.beginPath();ctx.ellipse(0,-43,28,43,0,0,Math.PI*2);ctx.stroke()}
+ const drawF=(p,color,skin)=>{let x=p.x,y=floor-p.y;const t=performance.now()/150,moving=Math.abs(p.vx||0)>.2,bob=moving?Math.abs(Math.sin(t))*3:Math.sin(t*.45)*1.8,step=moving?Math.sin(t*1.6)*7:Math.sin(t*.35)*1.2;
+ ctx.save();ctx.translate(x,y-bob);ctx.scale(p.face||1,1);
+ ctx.fillStyle="#0008";ctx.beginPath();ctx.ellipse(0,2,25,7,0,0,Math.PI*2);ctx.fill();
+ const cape=ctx.createLinearGradient(-15,-60,-36,-8);cape.addColorStop(0,skin==="neon"?"#a0ffff":"#a7baff");cape.addColorStop(1,"#343b79");ctx.fillStyle=cape;ctx.beginPath();ctx.moveTo(-10,-58);ctx.quadraticCurveTo(-37,-42,-27+Math.sin(t)*3,-8);ctx.quadraticCurveTo(-9,-19,2,-38);ctx.closePath();ctx.fill();
+ ctx.strokeStyle="#202a50";ctx.lineWidth=9;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-7,-20);ctx.lineTo(-9+step,-4);ctx.moveTo(7,-20);ctx.lineTo(9-step,-4);ctx.stroke();
+ ctx.strokeStyle="#d8eaff";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-9+step,-4);ctx.lineTo(-16+step,-3);ctx.moveTo(9-step,-4);ctx.lineTo(16-step,-3);ctx.stroke();
+ const armor=ctx.createLinearGradient(-15,-58,17,-24);armor.addColorStop(0,skin==="neon"?"#a3ffff":color);armor.addColorStop(.55,skin==="ember"?"#ff995f":"#657de0");armor.addColorStop(1,"#242c62");ctx.fillStyle=armor;ctx.beginPath();ctx.moveTo(-12,-59);ctx.lineTo(11,-59);ctx.lineTo(16,-29);ctx.lineTo(0,-22);ctx.lineTo(-16,-29);ctx.closePath();ctx.fill();
+ ctx.strokeStyle="#d9f7ff";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-9,-53);ctx.lineTo(0,-39);ctx.lineTo(9,-53);ctx.stroke();
+ ctx.strokeStyle="#f1c6ad";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(-12,-52);ctx.lineTo(-19,-36+Math.sin(t)*2);ctx.moveTo(12,-52);ctx.lineTo(19,-39);ctx.stroke();
+ ctx.fillStyle="#f4c9b0";ctx.beginPath();ctx.ellipse(0,-70,12,14,0,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle=skin==="ember"?"#773a34":"#29335f";ctx.beginPath();ctx.moveTo(-13,-72);ctx.quadraticCurveTo(-18,-94,1,-91);ctx.quadraticCurveTo(17,-91,13,-69);ctx.lineTo(7,-78);ctx.lineTo(0,-72);ctx.lineTo(-8,-78);ctx.closePath();ctx.fill();
+ ctx.fillStyle="#f8f5ff";ctx.fillRect(3,-72,5,3);ctx.fillStyle="#28345d";ctx.fillRect(6,-72,2,3);ctx.fillStyle=skin==="neon"?"#8effff":"#ffd77b";ctx.beginPath();ctx.arc(0,-86,3,0,Math.PI*2);ctx.fill();
+ ctx.strokeStyle=skin==="neon"?"#8effff":"#bceeff";ctx.lineWidth=3;ctx.shadowColor="#69eaff";ctx.shadowBlur=9;ctx.beginPath();ctx.arc(25,-45,15,-1.25,1.25);ctx.stroke();ctx.shadowBlur=0;
+ if(p.shield>0){ctx.strokeStyle="#6beaff";ctx.lineWidth=3;ctx.shadowColor="#55eaff";ctx.shadowBlur=15;ctx.beginPath();ctx.ellipse(0,-47,31,47,0,0,Math.PI*2);ctx.stroke();ctx.shadowBlur=0}
  ctx.restore()};
  drawF(battle.me,"#557eff",selectedSkin);
  const enemy=battle.mode==="pvp"&&battle.remote?.players?battle.remote.players[1-battle.index]:battle.enemy;
@@ -243,28 +265,31 @@ function draw(){
  $("myScore").textContent=battle.scores[battle.index]+" KILL";$("enemyScore").textContent=battle.scores[1-battle.index]+" KILL";$("scoreHud").textContent=battle.scores.join(" - ");$("roundHud").textContent="ROUND "+battle.round+" / 5";
  const sec=Math.floor((Date.now()-battle.start)/1000);$("timerHud").textContent=String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0");
 }
-function loop(){
- if(!battle||battle.ended)return;const now=Date.now(),me=battle.me,en=battle.enemy;
- const h=heroes.find(x=>x.id===selectedHero)||heroes[0];me.vx=touch.x*h.speed;
- if(keys.ArrowLeft||keys.a)me.vx=-h.speed;if(keys.ArrowRight||keys.d)me.vx=h.speed;
- me.x=Math.max(28,Math.min(innerWidth-28,me.x+me.vx));me.y+=me.vy;me.vy-=.65;if(me.y<=0){me.y=0;me.vy=0;me.ground=true}
+let previousFrame=0;
+function loop(timestamp=performance.now()){
+ if(!battle||battle.ended)return;
+ const wanted=Math.min(targetFps,measuredHz||60),interval=1000/wanted;
+ if(previousFrame&&timestamp-previousFrame<interval-1){gameLoop=requestAnimationFrame(loop);return}
+ const dt=previousFrame?Math.min((timestamp-previousFrame)/16.6667,2):1;previousFrame=timestamp;
+ const me=battle.me,en=battle.enemy,h=heroes.find(x=>x.id===selectedHero)||heroes[0];
+ me.vx=touch.x*h.speed;if(keys.ArrowLeft||keys.a)me.vx=-h.speed;if(keys.ArrowRight||keys.d)me.vx=h.speed;
+ me.x=Math.max(28,Math.min(innerWidth-28,me.x+me.vx*dt));me.y+=me.vy*dt;me.vy-=.65*dt;if(me.y<=0){me.y=0;me.vy=0;me.ground=true}
  if(battle.mode==="bot"){
-  const dx=me.x-en.x;en.face=dx>0?1:-1;en.vx=Math.abs(dx)>85?Math.sign(dx)*2.1:0;en.x=Math.max(28,Math.min(innerWidth-28,en.x+en.vx));
-  if(Math.abs(dx)<78&&Math.random()<.035)hit(en,me,8);
+  const dx=me.x-en.x;en.face=dx>0?1:-1;en.vx=Math.abs(dx)>82?Math.sign(dx)*2:0;en.x=Math.max(28,Math.min(innerWidth-28,en.x+en.vx*dt));
+  if(Math.abs(dx)<90&&Math.random()<.025*dt)hit(en,me,7);
+  if(Math.abs(dx)>260&&Math.random()<.008*dt)en.x-=Math.sign(dx)*35;
  }else if(battle.remote?.players){const rp=battle.remote.players[1-battle.index];if(rp){en.x=rp.x??en.x;en.y=rp.y??0;en.hp=rp.hp??en.hp;en.shield=rp.shield??0}}
- me.face=(battle.mode==="bot"?en.x:en.x)>me.x?1:-1;
- if(me.shield>0)me.shield=Math.max(0,me.shield-1/60);
- if(battle.mode==="pvp"&&now-lastSync>180){lastSync=now;syncState().catch(()=>{})}
+ me.face=en.x>me.x?1:-1;if(me.shield>0)me.shield=Math.max(0,me.shield-dt/60);
  draw();gameLoop=requestAnimationFrame(loop);
 }
 function hit(from,to,damage){if(to.shield>0)return;to.hp=Math.max(0,to.hp-damage);sound(180,.08,"square");if(to.hp===0)roundWin(from===battle.me?0:1)}
 function attack(){if(!battle||battle.ended)return;const now=Date.now();if(now-battle.lastAttack<500)return;battle.lastAttack=now;sound(300,.1,"sawtooth");const enemy=battle.mode==="pvp"&&battle.remote?.players?battle.remote.players[1-battle.index]:battle.enemy;if(Math.abs(battle.me.x-enemy.x)<105)hit(battle.me,enemy,heroes.find(x=>x.id===selectedHero).damage)}
 function useSkill(n){if(!battle||battle.ended)return;const now=Date.now(),cd=[0,5000,8000,18000][n];if(now<(battle.cooldowns["s"+n]||0)){toast("Skill masih cooldown");return}battle.cooldowns["s"+n]=now+cd;$("cd"+n).textContent=Math.ceil(cd/1000)+"s";if(n===1){sound(540,.25,"triangle");const e=battle.mode==="bot"?battle.enemy:battle.enemy;if(Math.abs(battle.me.x-e.x)<160)hit(battle.me,e,22)}if(n===2){sound(700,.2);battle.me.vx=0;battle.me.x=Math.min(innerWidth-30,battle.me.x+battle.me.face*90);if(Math.abs(battle.me.x-battle.enemy.x)<120)hit(battle.me,battle.enemy,18)}if(n===3){sound(900,.5,"sawtooth");battle.me.shield=1.5;hit(battle.me,battle.enemy,38)}vibrate()}
-function shield(){if(!battle||battle.ended)return;if(battle.me.shield>0)return;battle.me.shield=5;const b=$("shield");b.classList.add("cool");setTimeout(()=>b.classList.remove("cool"),5000);setTimeout(()=>toast("Shield cooldown selesai"),10000);sound(620,.15)}
+function shield(){if(!battle||battle.ended)return;if(battle.me.shield>0)return;battle.me.shield=5;const b=$("shield");b.classList.add("cool");b.disabled=true;setTimeout(()=>{b.classList.remove("cool");b.disabled=false},10000);sound(620,.15)}
 function jump(){if(battle?.me.ground){battle.me.vy=11;battle.me.ground=false;sound(250,.08)}}
 $("attack").onpointerdown=e=>{e.preventDefault();attack()};$("skill1").onclick=()=>useSkill(1);$("skill2").onclick=()=>useSkill(2);$("skill3").onclick=()=>useSkill(3);$("shield").onclick=shield;$("jump").onclick=jump;
 function stickMove(e){const r=$("stickArea").getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,len=Math.hypot(dx,dy),m=Math.min(35,len),a=Math.atan2(dy,dx);$("stick").style.left=(r.width/2-24+Math.cos(a)*m)+"px";$("stick").style.top=(r.height/2-24+Math.sin(a)*m)+"px";touch.x=Math.abs(dx)<12?0:Math.sign(dx)*Math.min(1,Math.abs(dx)/35)}
-$("stickArea").onpointerdown=e=>{$("stickArea").setPointerCapture(e.pointerId);stickMove(e)};$("stickArea").onpointermove=e=>{if(e.buttons)stickMove(e)};$("stickArea").onpointerup=()=>{touch.x=0;$("stick").style.left="37px";$("stick").style.top="37px"};$("stickArea").onpointercancel=$("stickArea").onpointerup;
+$("stickArea").onpointerdown=e=>{$("stickArea").setPointerCapture(e.pointerId);stickMove(e)};$("stickArea").onpointermove=e=>{if(e.buttons)stickMove(e)};$("stickArea").onpointerup=()=>{touch.x=0;$("stick").style.left=($("stickArea").clientWidth/2-24)+"px";$("stick").style.top=($("stickArea").clientHeight/2-24)+"px"};$("stickArea").onpointercancel=$("stickArea").onpointerup;
 addEventListener("keydown",e=>{keys[e.key]=true;if(e.key===" "){e.preventDefault();jump()}if(e.key==="j")attack();if(e.key==="1")useSkill(1);if(e.key==="2")useSkill(2);if(e.key==="3")useSkill(3);if(e.key==="k")shield()});addEventListener("keyup",e=>keys[e.key]=false);
 function roundWin(winner){if(!battle||battle.ended)return;battle.scores[winner]++;sound(winner===0?980:150,.4);if(battle.scores[winner]>=3){finish(winner===battle.index||battle.mode==="bot"&&winner===0);return}battle.round++;battle.me.hp=100;battle.enemy.hp=100;battle.me.x=160;battle.enemy.x=innerWidth-160;battle.me.shield=0;battle.enemy.shield=0;$("battleMsg").textContent="ROUND "+battle.round;setTimeout(()=>{$("battleMsg").textContent="";countdown()},900)}
 async function finish(win){battle.ended=true;const reward=win?180:65;try{const ref=doc(db,"users",user.uid);await runTransaction(db,async tx=>{const s=await tx.get(ref),d=s.data();tx.update(ref,{gold:(d.gold||0)+reward,wins:(d.wins||0)+(win?1:0)})});profile.gold+=reward;if(win)profile.wins=(profile.wins||0)+1;updateProfileUI()}catch(e){console.warn(e)}
