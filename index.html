@@ -1,1459 +1,394 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>2D Legend Battle Arena</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
-
-    * {
-      touch-action: none;
-      user-select: none;
-      -webkit-user-select: none;
-      box-sizing: border-box;
-    }
-    body, html {
-      margin: 0;
-      padding: 0;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      background-color: #080914;
-      font-family: 'Rajdhani', sans-serif;
-      color: #fff;
-    }
-    .font-orbitron { font-family: 'Orbitron', sans-serif; }
-    
-    /* Neon Glow Effects */
-    .glow-cyan { filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.7)); }
-    .glow-gold { filter: drop-shadow(0 0 10px rgba(234, 179, 8, 0.7)); }
-    .glow-purple { filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.7)); }
-
-    /* Custom Glassmorphism */
-    .glass-panel {
-      background: rgba(15, 23, 42, 0.88);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-    }
-
-    /* Animated Gradients */
-    .bg-cyber-gradient {
-      background: linear-gradient(135deg, #0d0f2b 0%, #1a0b2e 50%, #05192d 100%);
-    }
-
-    .hud-btn {
-      transition: transform 0.05s ease, opacity 0.2s ease;
-    }
-    .hud-btn:active {
-      transform: scale(0.9);
-    }
-
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
-    ::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.5); border-radius: 4px; }
-
-    #gameCanvas {
-      display: block;
-      width: 100vw;
-      height: 100vh;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#090d1b">
+<title>MEKUU ARENA</title>
+<style>
+:root{--bg:#090d1b;--panel:#111a30;--panel2:#172440;--line:#2b3b60;--cyan:#55e7ff;--violet:#9a7cff;--gold:#ffd166;--pink:#ff668c;--white:#f4f7ff}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--white);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;touch-action:pan-y}
+button,input{font:inherit}button{border:0;color:white;cursor:pointer;font-weight:800;letter-spacing:.3px}
+#app{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 0,#1b2c51 0,transparent 55%),linear-gradient(145deg,#080d1a,#11152b);overflow:hidden}
+.screen{position:absolute;inset:0;display:none;padding:clamp(12px,3vw,28px);overflow:auto}.screen.active{display:flex}
+#login{align-items:center;justify-content:center;text-align:center}
+.logo{font-size:clamp(34px,8vw,68px);font-weight:1000;letter-spacing:4px;line-height:1;text-shadow:0 0 28px #55e7ff66}.sub{color:#9db2d8;letter-spacing:3px;font-size:11px;margin:12px 0 26px}
+.panel{background:linear-gradient(145deg,#182644eF,#0d172beF);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 15px 45px #0006}
+.primary{background:linear-gradient(100deg,#347dff,#845cff);padding:14px 20px;border-radius:13px;box-shadow:0 7px 20px #416bff55}
+.secondary{background:#243656;border:1px solid #40577f;padding:11px 16px;border-radius:12px}
+.ghost{background:#1a2944;border:1px solid #344767;padding:10px 14px;border-radius:11px}
+.small{font-size:12px;color:#9fb2d4}.muted{color:#8ea2c6}.row{display:flex;align-items:center;gap:10px}.between{justify-content:space-between}.wrap{flex-wrap:wrap}
+#loginCard{width:min(430px,100%)}#loginCard p{line-height:1.6;color:#a8b8d5}
+#nameScreen{align-items:center;justify-content:center}input{width:100%;padding:14px;background:#0b1427;border:1px solid #3a5077;border-radius:12px;color:white;outline:none;margin:8px 0}
+#home{flex-direction:column;gap:14px;padding-bottom:24px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-size:25px;font-weight:1000;letter-spacing:2px}.wallet{display:flex;gap:8px;flex-wrap:wrap}.coin{background:#172642;border:1px solid #34496e;padding:8px 12px;border-radius:12px;font-weight:900;font-size:13px}
+.profile{display:flex;align-items:center;gap:10px;background:#111d34;border:1px solid #293d62;padding:8px 12px;border-radius:14px}.avatar{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#55e7ff,#8c65ff);display:grid;place-items:center;font-weight:1000}
+.verified{color:#55e7ff;font-size:16px;text-shadow:0 0 9px #55e7ff}
+.hero-banner{flex:1;min-height:180px;border:1px solid #354b78;border-radius:22px;overflow:hidden;position:relative;background:radial-gradient(ellipse at 75% 45%,#6549aa 0,transparent 25%),radial-gradient(ellipse at 72% 100%,#1b9eb1 0,transparent 42%),linear-gradient(110deg,#172849,#111329)}
+.hero-banner:after{content:"";position:absolute;right:9%;bottom:-35px;width:145px;height:190px;border-radius:48% 48% 20% 20%;background:linear-gradient(130deg,#72eaff,#5261bd 55%,#24284f);transform:skew(-8deg);box-shadow:0 0 50px #5ceaff66}
+.bannerText{position:relative;z-index:1;padding:24px;max-width:60%}.bannerText h2{font-size:clamp(24px,5vw,42px);margin:0 0 8px}.bannerText p{color:#a8bfdf;font-size:13px;line-height:1.5}
+.modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.mode{min-height:110px;text-align:left;border-radius:18px;padding:18px;background:linear-gradient(135deg,#1c3762,#202348);border:1px solid #3c5a8b;position:relative;overflow:hidden}.mode:nth-child(2){background:linear-gradient(135deg,#512b65,#20234a)}.mode b{font-size:19px;display:block}.mode span{font-size:11px;color:#bfd0ec}.mode em{font-style:normal;font-size:29px;float:right}
+.nav{display:flex;gap:9px;flex-wrap:wrap}.nav button{flex:1;min-width:90px}
+#shop,#settings,#heroes{flex-direction:column;gap:14px}
+.pagehead{display:flex;justify-content:space-between;align-items:center;gap:12px}.pagehead h2{margin:0}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}
+.item{background:#14213a;border:1px solid #304565;border-radius:16px;padding:13px;display:flex;flex-direction:column;gap:8px}
+.art{height:105px;border-radius:12px;background:radial-gradient(circle at 50% 30%,#75eaff,#354a8c 48%,#17213d);display:grid;place-items:center;font-size:54px}
+.item button{margin-top:auto}.price{color:var(--gold);font-weight:900;font-size:13px}
+#battle{padding:0;overflow:hidden;background:#090d1a;flex-direction:column}
+#gameCanvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.hud{position:absolute;z-index:3;left:0;right:0;top:0;padding:10px 14px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
+.hudbox{background:#0b142bd9;border:1px solid #50638b;border-radius:12px;padding:7px 11px;min-width:100px;text-align:center;font-size:12px}
+.health{height:8px;background:#4a263b;border-radius:9px;margin-top:5px;overflow:hidden}.health i{display:block;height:100%;background:linear-gradient(90deg,#ff547c,#ffb16b);width:100%}
+#countdown{position:absolute;inset:0;display:none;place-items:center;font-size:clamp(60px,16vw,130px);font-weight:1000;text-shadow:0 0 35px #57eaff;z-index:4;pointer-events:none}
+#battleMsg{position:absolute;z-index:4;top:22%;left:0;right:0;text-align:center;font-size:clamp(18px,4vw,30px);font-weight:1000;text-shadow:0 3px 15px #000}
+#controls{position:absolute;z-index:5;bottom:max(12px,env(safe-area-inset-bottom));left:0;right:0;display:flex;justify-content:space-between;align-items:end;padding:0 16px;pointer-events:none}
+#stickArea{width:125px;height:125px;border-radius:50%;background:#a7c5ff20;border:2px solid #b5d2ff66;position:relative;pointer-events:auto;touch-action:none}
+#stick{position:absolute;width:48px;height:48px;left:37px;top:37px;border-radius:50%;background:#a9dfff99;border:2px solid #e3f6ff}
+.actions{display:grid;grid-template-columns:repeat(3,58px);gap:7px;pointer-events:auto}
+.act{width:58px;height:58px;border-radius:50%;background:linear-gradient(145deg,#354d7d,#202d4c);border:2px solid #9cb8e7;box-shadow:0 4px 12px #0008;font-size:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.act b{font-size:17px}.act.cool{opacity:.45}.act small{position:absolute;bottom:3px;font-size:9px}
+#attack{background:linear-gradient(145deg,#ff8a53,#c52d58);grid-row:span 2;width:66px;height:66px}
+#skill3{background:linear-gradient(145deg,#9d6aff,#4c3fbb)}
+#leave{position:absolute;right:12px;top:62px;z-index:8;pointer-events:auto}
+#result{position:absolute;z-index:8;inset:0;display:none;place-items:center;background:#050914d9;padding:20px}
+#result .panel{width:min(360px,100%);text-align:center}
+#toast{position:absolute;z-index:20;bottom:18px;left:50%;transform:translateX(-50%);background:#263b5d;padding:10px 15px;border-radius:12px;display:none;max-width:90%;font-size:12px}
+#queueOverlay{position:absolute;z-index:10;inset:0;background:#080d1beF;display:none;place-items:center;text-align:center;padding:20px}
+#queueOverlay .panel{width:min(360px,100%)}
+.spinner{width:38px;height:38px;border:4px solid #435777;border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite;margin:15px auto}@keyframes spin{to{transform:rotate(360deg)}}
+@media(orientation:portrait){#battle:before{content:"MEKUU ARENA • Putar HP ke landscape untuk pengalaman terbaik";position:absolute;z-index:2;top:52px;left:50%;transform:translateX(-50%);width:max-content;max-width:92%;background:#0b142bd9;border:1px solid #55e7ff88;color:#dffaff;padding:7px 12px;border-radius:10px;text-align:center;font-size:11px;font-weight:800;pointer-events:none}#controls{transform:scale(.84);transform-origin:bottom center}}
+@media(max-width:600px){.screen{padding:12px}.hero-banner{min-height:155px}.bannerText{max-width:68%;padding:17px}.bannerText p{font-size:11px}.brand{font-size:20px}.profile{padding:6px}.actions{grid-template-columns:repeat(3,50px);gap:5px}.act{width:50px;height:50px}#attack{width:58px;height:58px}#stickArea{width:112px;height:112px}#stick{left:31px;top:31px}}
+</style>
 </head>
-<body class="bg-cyber-gradient relative flex flex-col justify-center items-center h-screen w-screen overflow-hidden">
-
-  <!-- ==================== UI CONTAINERS ==================== -->
-  <div id="appContainer" class="relative w-full h-full flex justify-center items-center">
-    
-    <!-- FULLSCREEN / LANDSCAPE ORIENTATION PROMPT -->
-    <div id="landscapePrompt" class="hidden fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-6 text-center">
-      <i class="fa-solid font-orbitron fa-mobile-screen-button text-6xl text-cyan-400 animate-bounce mb-4"></i>
-      <h2 class="text-2xl font-bold font-orbitron text-white mb-2">PLEASE ROTATE DEVICE</h2>
-      <p class="text-slate-400 max-w-sm mb-6">This game is best experienced in Landscape mode. Click below to trigger Fullscreen!</p>
-      <button onclick="requestLandscapeFullscreen()" class="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl text-white font-bold font-orbitron tracking-widest hover:brightness-125 shadow-lg shadow-cyan-500/30">
-        ENTER FULLSCREEN <i class="fa-solid fa-expand ml-2"></i>
-      </button>
-    </div>
-
-    <!-- 1. LOGIN SCREEN -->
-    <div id="loginScreen" class="absolute inset-0 z-40 flex flex-col items-center justify-center p-4 bg-cyber-gradient">
-      <div class="glass-panel p-8 rounded-3xl max-w-md w-full border border-cyan-500/30 text-center shadow-2xl relative overflow-hidden">
-        <div class="absolute -top-10 -right-10 w-32 h-32 bg-cyan-500/20 rounded-full blur-2xl"></div>
-        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl"></div>
-
-        <h1 class="text-4xl font-black font-orbitron bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent mb-2">
-          LEGEND BATTLE 2D
-        </h1>
-        <p class="text-sm text-slate-400 tracking-wider mb-8">CLASH ARENA ALL-STAR</p>
-
-        <div class="space-y-4">
-          <button id="btnGoogleAuth" onclick="loginWithGoogle()" class="w-full py-4 bg-slate-800/80 hover:bg-slate-700 border border-slate-600 rounded-2xl flex items-center justify-center gap-3 text-white font-bold transition-all shadow-lg hover:border-cyan-400">
-            <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-            Sign In with Google
-          </button>
-          
-          <button onclick="loginAsGuest()" class="w-full py-3 bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-300 border border-cyan-500/50 rounded-2xl font-bold font-orbitron text-xs tracking-widest transition-all">
-            PLAY AS GUEST
-          </button>
-        </div>
-
-        <!-- Username Setup Modal -->
-        <div id="usernameModal" class="hidden fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4">
-          <div class="glass-panel p-6 rounded-2xl max-w-sm w-full border border-cyan-400">
-            <h3 class="text-xl font-orbitron font-bold text-cyan-400 mb-2">CREATE USERNAME</h3>
-            <p class="text-xs text-slate-400 mb-4">Only letters, numbers, and underscores (_). Emojis forbidden!</p>
-            <input type="text" id="usernameInput" maxlength="15" placeholder="e.g. Shadow_Knight99" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-cyan-400 mb-4 font-mono">
-            <p id="usernameError" class="text-xs text-red-400 hidden mb-3"></p>
-            <button onclick="saveUsername()" class="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold font-orbitron rounded-xl">SAVE & CONTINUE</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 2. MAIN MENU SCREEN -->
-    <div id="mainMenuScreen" class="hidden absolute inset-0 z-30 flex flex-col justify-between p-6 bg-cyber-gradient">
-      <!-- Top Bar: Player Info & Currencies -->
-      <div class="flex justify-between items-center glass-panel px-6 py-3 rounded-2xl border-cyan-500/30">
-        <div class="flex items-center gap-3">
-          <div id="userAvatar" class="w-12 h-12 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-600 p-0.5 shadow-md flex items-center justify-center font-bold text-lg font-orbitron">
-            ?
-          </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span id="displayUsername" class="font-orbitron font-bold text-white text-lg">Player</span>
-              <!-- Verified Badge -->
-              <span id="verifiedBadge" class="hidden">
-                <span class="inline-flex items-center justify-center w-5 h-5 bg-emerald-500 text-slate-950 rounded-full text-xs font-bold shadow-lg shadow-emerald-500/50" title="Official Verified Account">
-                  <i class="fa-solid fa-check text-xs"></i>
-                </span>
-              </span>
-            </div>
-            <span id="userEmail" class="text-xs text-slate-400 font-mono">guest@local</span>
-          </div>
-        </div>
-
-        <!-- Currencies & Settings -->
-        <div class="flex items-center gap-6">
-          <div class="flex items-center gap-2 bg-slate-900/80 px-4 py-2 rounded-xl border border-amber-500/30">
-            <i class="fa-solid fa-coins text-amber-400 text-lg glow-gold"></i>
-            <span id="goldDisplay" class="font-orbitron font-bold text-amber-300">0</span>
-          </div>
-          <div class="flex items-center gap-2 bg-slate-900/80 px-4 py-2 rounded-xl border border-cyan-500/30">
-            <i class="fa-solid fa-gem text-cyan-400 text-lg glow-cyan"></i>
-            <span id="diamondDisplay" class="font-orbitron font-bold text-cyan-300">0</span>
-          </div>
-          <button onclick="openSettings()" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 flex items-center justify-center border border-slate-600 text-slate-300">
-            <i class="fa-solid fa-gear"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- Center Action Buttons -->
-      <div class="flex justify-center items-center gap-8 my-auto">
-        <!-- VS BOT Card -->
-        <button onclick="openBotModeModal()" class="group relative w-64 h-72 rounded-3xl overflow-hidden glass-panel border border-cyan-500/40 hover:border-cyan-400 transition-all duration-300 hover:scale-105 flex flex-col justify-end p-6 text-left shadow-2xl">
-          <div class="absolute inset-0 bg-gradient-to-t from-cyan-950/90 via-slate-950/40 to-transparent"></div>
-          <i class="fa-solid fa-robot absolute top-6 right-6 text-6xl text-cyan-500/20 group-hover:text-cyan-400/40 transition-all"></i>
-          <span class="relative z-10 font-orbitron text-xs text-cyan-400 tracking-widest font-bold">SINGLEPLAYER</span>
-          <h2 class="relative z-10 font-orbitron text-2xl font-black text-white">PLAYER VS BOT</h2>
-          <p class="relative z-10 text-xs text-slate-400 mt-1">Practice against 4 AI difficulties</p>
-        </button>
-
-        <!-- 1 VS 1 MATCH Card -->
-        <button onclick="startMatchmaking()" class="group relative w-64 h-72 rounded-3xl overflow-hidden glass-panel border border-purple-500/40 hover:border-purple-400 transition-all duration-300 hover:scale-105 flex flex-col justify-end p-6 text-left shadow-2xl">
-          <div class="absolute inset-0 bg-gradient-to-t from-purple-950/90 via-slate-950/40 to-transparent"></div>
-          <i class="fa-solid fa-swords absolute top-6 right-6 text-6xl text-purple-500/20 group-hover:text-purple-400/40 transition-all"></i>
-          <span class="relative z-10 font-orbitron text-xs text-purple-400 tracking-widest font-bold">MULTIPLAYER</span>
-          <h2 class="relative z-10 font-orbitron text-2xl font-black text-white">1 VS 1 MATCH</h2>
-          <p class="relative z-10 text-xs text-slate-400 mt-1">Real-time PvP matchmaking</p>
-        </button>
-      </div>
-
-      <!-- Bottom Nav Bar -->
-      <div class="flex justify-between items-center">
-        <div class="flex gap-4">
-          <button onclick="openShop()" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:brightness-110 text-slate-950 font-orbitron font-bold text-sm tracking-wider flex items-center gap-2 shadow-lg shadow-amber-500/20">
-            <i class="fa-solid fa-store text-lg"></i> HERO & SKIN SHOP
-          </button>
-          <button onclick="openBuildModal()" class="px-6 py-3 rounded-2xl glass-panel hover:bg-slate-800 text-cyan-300 border border-cyan-500/40 font-orbitron font-bold text-sm tracking-wider flex items-center gap-2">
-            <i class="fa-solid fa-shield-halved text-lg"></i> ITEM BUILDS
-          </button>
-        </div>
-
-        <button onclick="requestLandscapeFullscreen()" class="px-4 py-3 rounded-2xl glass-panel text-slate-400 hover:text-white border border-slate-700 text-xs font-orbitron tracking-widest flex items-center gap-2">
-          <i class="fa-solid fa-expand"></i> FULLSCREEN
-        </button>
-      </div>
-    </div>
-
-    <!-- 3. BOT DIFFICULTY MODAL -->
-    <div id="botModal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-      <div class="glass-panel p-6 rounded-3xl max-w-md w-full border border-cyan-500/40 text-center">
-        <h3 class="text-2xl font-orbitron font-bold text-cyan-400 mb-4">SELECT BOT DIFFICULTY</h3>
-        <div class="grid grid-cols-2 gap-3 mb-6">
-          <button onclick="selectBotDifficulty('EASY')" class="p-4 bg-slate-900/90 border border-green-500/40 rounded-2xl hover:border-green-400 flex flex-col items-center">
-            <span class="font-orbitron font-bold text-green-400">1. EASY</span>
-            <span class="text-[10px] text-slate-400">Basic attacks only</span>
-          </button>
-          <button onclick="selectBotDifficulty('NORMAL')" class="p-4 bg-slate-900/90 border border-blue-500/40 rounded-2xl hover:border-blue-400 flex flex-col items-center">
-            <span class="font-orbitron font-bold text-blue-400">2. NORMAL</span>
-            <span class="text-[10px] text-slate-400">Standard skill timing</span>
-          </button>
-          <button onclick="selectBotDifficulty('HARD')" class="p-4 bg-slate-900/90 border border-purple-500/40 rounded-2xl hover:border-purple-400 flex flex-col items-center">
-            <span class="font-orbitron font-bold text-purple-400">3. HARD</span>
-            <span class="text-[10px] text-slate-400">Combo execution</span>
-          </button>
-          <button onclick="selectBotDifficulty('AI_HARD')" class="p-4 bg-slate-900/90 border border-red-500/50 rounded-2xl hover:border-red-400 flex flex-col items-center bg-red-950/20">
-            <span class="font-orbitron font-bold text-red-500 glow-purple">4. AI HARD!</span>
-            <span class="text-[10px] text-slate-400">Smart shield & builds</span>
-          </button>
-        </div>
-        <button onclick="closeBotModal()" class="px-6 py-2 bg-slate-800 rounded-xl text-slate-300 font-bold font-orbitron text-xs">CANCEL</button>
-      </div>
-    </div>
-
-    <!-- 4. HERO & SKIN SELECTION DRAFT MODAL -->
-    <div id="draftModal" class="hidden fixed inset-0 z-50 bg-black/90 flex flex-col justify-between p-6">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-4">
-        <div>
-          <h2 class="font-orbitron text-2xl font-bold text-cyan-400">HERO SELECTION</h2>
-          <p class="text-xs text-slate-400">Select Hero & Skin for battle</p>
-        </div>
-        <div id="selectedHeroTitle" class="font-orbitron text-lg font-bold text-amber-400">MIYA</div>
-      </div>
-
-      <!-- Hero Selection Grid -->
-      <div class="flex-1 my-4 flex items-center justify-center gap-6 overflow-x-auto py-4">
-        <div id="draftHeroContainer" class="flex gap-6"></div>
-      </div>
-
-      <!-- Bottom Lock-In Controls -->
-      <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
-        <div class="flex items-center gap-4">
-          <span class="font-orbitron text-xs text-slate-400">SKIN:</span>
-          <div id="skinContainer" class="flex gap-3"></div>
-        </div>
-        <button onclick="confirmHeroDraft()" class="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-black font-orbitron rounded-xl tracking-widest text-lg hover:brightness-125 shadow-lg shadow-cyan-500/30">
-          LOCK IN!
-        </button>
-      </div>
-    </div>
-
-    <!-- 5. MATCHMAKING OVERLAY -->
-    <div id="matchmakingModal" class="hidden fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-6 text-center">
-      <div class="relative w-32 h-32 mb-6 flex items-center justify-center">
-        <div class="absolute inset-0 rounded-full border-4 border-purple-500/20 border-t-purple-500 animate-spin"></div>
-        <i class="fa-solid fa-swords text-4xl text-purple-400 animate-pulse"></i>
-      </div>
-      <h2 class="text-2xl font-orbitron font-bold text-white mb-2">SEARCHING FOR OPPONENT...</h2>
-      <p class="text-xs text-slate-400 font-mono mb-6" id="matchTimer">Matchmaking in progress...</p>
-      <button onclick="cancelMatchmaking()" class="px-6 py-3 bg-red-600/30 border border-red-500/50 hover:bg-red-600/50 text-red-300 font-orbitron font-bold text-xs rounded-xl">
-        CANCEL MATCHMAKING
-      </button>
-    </div>
-
-    <!-- 6. SHOP MODAL -->
-    <div id="shopModal" class="hidden fixed inset-0 z-50 bg-black/90 flex flex-col p-6">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-4">
-        <div class="flex items-center gap-4">
-          <h2 class="font-orbitron text-2xl font-bold text-amber-400"><i class="fa-solid fa-store mr-2"></i>HERO & SKIN SHOP</h2>
-          <div class="flex gap-3 ml-6 font-orbitron text-xs">
-            <button onclick="switchShopTab('heroes')" id="tabShopHeroes" class="px-4 py-2 rounded-xl bg-cyan-600 text-white font-bold">HEROES</button>
-            <button onclick="switchShopTab('skins')" id="tabShopSkins" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-400 font-bold">SKINS</button>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-6">
-          <div class="flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-lg border border-amber-500/30">
-            <i class="fa-solid fa-coins text-amber-400"></i>
-            <span id="shopGoldDisplay" class="font-orbitron font-bold text-amber-300 text-sm">0</span>
-          </div>
-          <div class="flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-lg border border-cyan-500/30">
-            <i class="fa-solid fa-gem text-cyan-400"></i>
-            <span id="shopDiamondDisplay" class="font-orbitron font-bold text-cyan-300 text-sm">0</span>
-          </div>
-          <button onclick="closeShop()" class="w-10 h-10 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
-            <i class="fa-solid fa-xmark text-lg"></i>
-          </button>
-        </div>
-      </div>
-
-      <div id="shopContent" class="flex-1 grid grid-cols-3 gap-6 overflow-y-auto py-6"></div>
-    </div>
-
-    <!-- 7. ITEM BUILDS MODAL -->
-    <div id="buildModal" class="hidden fixed inset-0 z-50 bg-black/90 flex flex-col p-6">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-4">
-        <h2 class="font-orbitron text-2xl font-bold text-cyan-400"><i class="fa-solid fa-shield-halved mr-2"></i>EQUIPMENT BUILDS (5 SLOTS)</h2>
-        <button onclick="closeBuildModal()" class="w-10 h-10 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-      </div>
-
-      <div class="flex-1 grid grid-cols-12 gap-6 my-6">
-        <!-- Active 5 Slots -->
-        <div class="col-span-4 glass-panel p-6 rounded-2xl flex flex-col justify-between">
-          <div>
-            <h3 class="font-orbitron text-sm text-slate-400 mb-4">EQUIPPED SLOTS</h3>
-            <div id="equippedItemsContainer" class="grid grid-cols-5 gap-3 mb-6"></div>
-            <div id="buildStatsSummary" class="text-xs space-y-2 font-mono text-slate-300 bg-slate-900/80 p-4 rounded-xl"></div>
-          </div>
-          <p class="text-[10px] text-slate-500">Items automatically apply attribute boosts during battles!</p>
-        </div>
-
-        <!-- Catalogue Pool -->
-        <div class="col-span-8 glass-panel p-6 rounded-2xl overflow-y-auto">
-          <h3 class="font-orbitron text-sm text-slate-400 mb-4">AVAILABLE GEAR</h3>
-          <div id="equipmentCatalogue" class="grid grid-cols-2 gap-4"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 8. SETTINGS & FPS MODAL -->
-    <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-black/90 flex flex-col p-6">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-4">
-        <h2 class="font-orbitron text-2xl font-bold text-slate-200"><i class="fa-solid fa-sliders mr-2"></i>SETTINGS</h2>
-        <button onclick="closeSettings()" class="w-10 h-10 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-      </div>
-
-      <div class="flex-1 grid grid-cols-2 gap-6 py-6">
-        <div class="glass-panel p-6 rounded-2xl space-y-6">
-          <h3 class="font-orbitron text-cyan-400 font-bold">FRAME RATE</h3>
-          <div>
-            <label class="text-xs text-slate-400 block mb-2 font-orbitron">TARGET FPS</label>
-            <div class="flex gap-3" id="fpsOptionGroup">
-              <button onclick="setFPS(30)" id="fps30" class="flex-1 py-3 bg-slate-800 rounded-xl font-orbitron font-bold text-xs border border-slate-700">30 FPS</button>
-              <button onclick="setFPS(60)" id="fps60" class="flex-1 py-3 bg-cyan-600 rounded-xl font-orbitron font-bold text-xs border border-cyan-400 text-white">60 FPS</button>
-              <button onclick="setFPS(90)" id="fps90" class="hidden flex-1 py-3 bg-purple-600 rounded-xl font-orbitron font-bold text-xs border border-purple-400 text-white glow-purple">90 EXTREME</button>
-            </div>
-            <p class="text-[11px] text-slate-500 mt-2">Detected Refresh Rate: <span id="detectedRefreshRate" class="text-cyan-400 font-mono">Checking...</span></p>
-          </div>
-        </div>
-
-        <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between">
-          <div>
-            <h3 class="font-orbitron text-cyan-400 font-bold mb-2">CUSTOM CONTROLS</h3>
-            <p class="text-xs text-slate-400 mb-4">Customize HUD layout positions for touch gameplay.</p>
-            <button onclick="openHUDCustomizer()" class="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl font-orbitron font-bold text-white tracking-widest hover:brightness-125">
-              EDIT CONTROLS <i class="fa-solid fa-hand-pointer ml-2"></i>
-            </button>
-          </div>
-          <button onclick="resetHUDControls()" class="py-2 bg-slate-800 text-slate-400 rounded-xl font-orbitron text-xs hover:text-white">RESET HUD</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 9. HUD CUSTOMIZER OVERLAY -->
-    <div id="hudCustomizerOverlay" class="hidden fixed inset-0 z-50 bg-black/80 flex flex-col justify-between p-4">
-      <div class="glass-panel p-4 rounded-xl flex justify-between items-center">
-        <span class="font-orbitron font-bold text-amber-400 text-sm">DRAG BUTTONS TO SET POSITIONS</span>
-        <button onclick="saveHUDCustomizer()" class="px-6 py-2 bg-green-500 text-slate-950 font-bold font-orbitron rounded-xl text-xs">SAVE HUD</button>
-      </div>
-
-      <div id="hudDragCanvas" class="relative flex-1 my-4 border border-dashed border-cyan-500/30 rounded-2xl">
-        <div id="dragJoystick" class="absolute w-28 h-28 rounded-full border-2 border-cyan-400/50 bg-cyan-950/30 flex items-center justify-center cursor-move font-orbitron text-xs text-cyan-300">JOYSTICK</div>
-        <div id="dragAtk" class="absolute w-16 h-16 rounded-full bg-red-600/60 border border-red-400 flex items-center justify-center cursor-move font-orbitron text-xs font-bold">ATK</div>
-        <div id="dragShield" class="absolute w-12 h-12 rounded-full bg-blue-600/60 border border-blue-400 flex items-center justify-center cursor-move font-orbitron text-[10px]">SHIELD</div>
-        <div id="dragSkill1" class="absolute w-12 h-12 rounded-full bg-cyan-600/60 border border-cyan-400 flex items-center justify-center cursor-move font-orbitron text-[10px]">SKILL 1</div>
-        <div id="dragSkill2" class="absolute w-12 h-12 rounded-full bg-amber-600/60 border border-amber-400 flex items-center justify-center cursor-move font-orbitron text-[10px]">SKILL 2</div>
-        <div id="dragUlti" class="absolute w-14 h-14 rounded-full bg-purple-600/60 border border-purple-400 flex items-center justify-center cursor-move font-orbitron text-xs font-bold glow-purple">ULTI</div>
-      </div>
-    </div>
-
-    <!-- 10. GAMEPLAY SCREEN CANVAS & HUD -->
-    <div id="gameplayScreen" class="hidden absolute inset-0 z-20 bg-slate-950">
-      <canvas id="gameCanvas"></canvas>
-
-      <!-- Score Bar Header -->
-      <div class="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-6 glass-panel px-6 py-2 rounded-2xl border-cyan-500/40 z-30">
-        <div class="flex items-center gap-3">
-          <span id="p1Name" class="font-orbitron font-bold text-cyan-400 text-xs">P1</span>
-          <span id="p1Score" class="font-orbitron font-black text-2xl text-white">0</span>
-        </div>
-        <div class="text-xs font-orbitron font-bold text-slate-500">VS</div>
-        <div class="flex items-center gap-3">
-          <span id="p2Score" class="font-orbitron font-black text-2xl text-white">0</span>
-          <span id="p2Name" class="font-orbitron font-bold text-red-400 text-xs">BOT</span>
-        </div>
-      </div>
-
-      <!-- Countdown Overlay -->
-      <div id="countdownOverlay" class="hidden absolute inset-0 z-40 flex items-center justify-center bg-black/40">
-        <span id="countdownText" class="font-black font-orbitron text-8xl text-amber-400 glow-gold animate-ping">3</span>
-      </div>
-
-      <!-- IN-GAME TOUCH HUD -->
-      <div id="inGameHUD" class="absolute inset-0 pointer-events-none z-30">
-        <div id="hudJoystickContainer" class="absolute pointer-events-auto w-32 h-32 rounded-full bg-slate-900/40 border border-cyan-500/30 flex items-center justify-center">
-          <div id="hudJoystickKnob" class="w-12 h-12 rounded-full bg-cyan-400/80 shadow-lg shadow-cyan-500/50"></div>
-        </div>
-
-        <button id="btnAtk" class="hud-btn absolute pointer-events-auto rounded-full bg-gradient-to-tr from-red-600 to-amber-500 border-2 border-red-300 flex items-center justify-center text-white font-bold shadow-lg shadow-red-600/40">
-          <i class="fa-solid fa-swords text-xl"></i>
-        </button>
-
-        <button id="btnShield" class="hud-btn absolute pointer-events-auto rounded-full bg-gradient-to-tr from-blue-600 to-cyan-500 border-2 border-cyan-300 flex items-center justify-center text-white font-bold shadow-lg shadow-blue-600/40">
-          <i class="fa-solid fa-shield text-base"></i>
-          <span id="shieldCD" class="absolute inset-0 rounded-full bg-black/70 flex items-center justify-center text-xs font-orbitron hidden">5s</span>
-        </button>
-
-        <button id="btnSkill1" class="hud-btn absolute pointer-events-auto rounded-full bg-gradient-to-tr from-cyan-600 to-teal-400 border-2 border-teal-200 flex items-center justify-center text-white font-bold shadow-lg">
-          <span class="text-xs font-orbitron">S1</span>
-          <span id="skill1CD" class="absolute inset-0 rounded-full bg-black/75 flex items-center justify-center text-xs font-orbitron hidden">3s</span>
-        </button>
-
-        <button id="btnSkill2" class="hud-btn absolute pointer-events-auto rounded-full bg-gradient-to-tr from-amber-600 to-yellow-400 border-2 border-amber-200 flex items-center justify-center text-white font-bold shadow-lg">
-          <span class="text-xs font-orbitron">S2</span>
-          <span id="skill2CD" class="absolute inset-0 rounded-full bg-black/75 flex items-center justify-center text-xs font-orbitron hidden">5s</span>
-        </button>
-
-        <button id="btnUlti" class="hud-btn absolute pointer-events-auto rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 border-2 border-pink-300 flex items-center justify-center text-white font-bold shadow-lg glow-purple">
-          <i class="fa-solid fa-bolt text-lg"></i>
-          <span id="ultiCD" class="absolute inset-0 rounded-full bg-black/75 flex items-center justify-center text-xs font-orbitron hidden">12s</span>
-        </button>
-      </div>
-
-      <!-- MATCH RESULT MODAL -->
-      <div id="matchResultModal" class="hidden absolute inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-6 text-center">
-        <h1 id="resultTitle" class="font-black font-orbitron text-6xl text-amber-400 mb-2 glow-gold">VICTORY!</h1>
-        <p id="resultSubtitle" class="text-slate-400 mb-6">Match completed!</p>
-        <div class="flex gap-6 mb-8">
-          <div class="glass-panel px-6 py-4 rounded-2xl border border-amber-500/30">
-            <span class="text-xs text-slate-400 block font-orbitron">REWARD GOLD</span>
-            <span id="rewardGold" class="font-orbitron font-bold text-2xl text-amber-300">+300</span>
-          </div>
-          <div class="glass-panel px-6 py-4 rounded-2xl border border-cyan-500/30">
-            <span class="text-xs text-slate-400 block font-orbitron">REWARD DIAMONDS</span>
-            <span id="rewardDiamonds" class="font-orbitron font-bold text-2xl text-cyan-300">+5</span>
-          </div>
-        </div>
-        <button onclick="exitMatchToMenu()" class="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 font-black font-orbitron rounded-xl text-white tracking-wider text-base shadow-lg hover:brightness-125">
-          MAIN MENU
-        </button>
-      </div>
-    </div>
+<body>
+<div id="app">
+<section id="login" class="screen active">
+ <div id="loginCard" class="panel">
+  <div class="logo">MEKUU</div><div class="sub">ARENA • DUEL BEYOND LIMITS</div>
+  <p>Masuk untuk menyimpan profil, mengumpulkan gold, membuka hero, dan menantang pemain lain.</p>
+  <button class="primary" id="googleLogin" style="width:100%">🌐 &nbsp; LOGIN DENGAN GOOGLE</button>
+  <p class="small">Koneksi internet diperlukan. Data akun disimpan di Firebase Authentication dan Firestore.</p>
+  <div id="loginStatus" class="small"></div>
+ </div>
+</section>
+<section id="nameScreen" class="screen">
+ <div class="panel" style="width:min(420px,100%)">
+  <h2>Buat username</h2><p class="small">Gunakan 3–16 karakter: huruf, angka, dan underscore. Emoji tidak diperbolehkan.</p>
+  <input id="usernameInput" maxlength="16" placeholder="contoh: Ean_27" autocomplete="off">
+  <button class="primary" id="saveUsername" style="width:100%">SIMPAN & LANJUT</button><p id="nameError" class="small"></p>
+ </div>
+</section>
+<section id="home" class="screen">
+ <div class="topbar">
+  <div class="brand">MEKUU <span style="color:var(--cyan)">ARENA</span></div>
+  <div class="wallet"><div class="coin">🟡 <span id="gold">0</span></div><div class="coin">💎 <span id="diamond">0</span></div></div>
+  <div class="profile"><div class="avatar" id="avatar">M</div><div><b id="playerName">Player</b> <span id="verifyBadge"></span><div class="small" id="rankText">ROOKIE</div></div><button class="ghost" id="logout" title="Keluar">↪</button></div>
+ </div>
+ <div class="hero-banner"><div class="bannerText"><div class="small" style="color:var(--cyan);font-weight:900">SEASON 01 • THE AWAKENING</div><h2>ENTER THE<br>ARENA.</h2><p>Pilih hero. Kuasai skill. Jadilah legenda di arena MEKUU.</p></div></div>
+ <div class="modes">
+  <button class="mode" id="botMode"><em>⚔️</em><b>PLAYER VS BOT</b><span>Lawan AI dengan tingkat kesulitan tinggi</span></button>
+  <button class="mode" id="pvpMode"><em>🌐</em><b>1 VS 1 ONLINE</b><span>Matchmaking mencari pemain lain</span></button>
+ </div>
+ <div class="nav"><button class="secondary" data-page="heroes">🦸 HERO</button><button class="secondary" data-page="shop">🛒 SHOP</button><button class="secondary" data-page="settings">⚙️ PENGATURAN</button></div>
+ <div class="small">Versi prototype • Hadiah pertandingan: gold. Koneksi diperlukan untuk mode online.</div>
+</section>
+<section id="heroes" class="screen">
+ <div class="pagehead"><h2>PILIH HERO</h2><button class="ghost" data-page="home">✕</button></div><p class="small">Hero yang sudah dimiliki dapat dipilih sebelum pertandingan.</p><div id="heroCards" class="cards"></div>
+</section>
+<section id="shop" class="screen">
+ <div class="pagehead"><h2>MARKETPLACE</h2><button class="ghost" data-page="home">✕</button></div>
+ <div class="nav"><button class="secondary" id="shopHeroes">HERO</button><button class="secondary" id="shopSkins">SKIN</button></div><div id="shopCards" class="cards"></div>
+</section>
+<section id="settings" class="screen">
+ <div class="pagehead"><h2>PENGATURAN</h2><button class="ghost" data-page="home">✕</button></div>
+ <div class="panel"><h3>Kontrol pertandingan</h3><p class="small">Tombol virtual tersedia saat pertandingan. Pilih tata letak kontrol.</p>
+ <label class="small">Layout kontrol</label><select id="controlLayout" class="secondary" style="width:100%;margin-top:8px"><option value="classic">Classic — joystick kiri, skill kanan</option><option value="compact">Compact — tombol lebih rapat</option></select>
+ <label class="small" style="display:block;margin-top:14px">Batas frame rate</label><select id="fpsSelect" class="secondary" style="width:100%;margin-top:8px"><option value="30">30 FPS — Hemat</option><option value="60" selected>60 FPS — Seimbang</option></select><p class="small" id="fpsInfo">Memeriksa kemampuan refresh browser...</p>
+ <label class="row" style="margin-top:15px"><input type="checkbox" id="soundToggle" checked style="width:auto"> Suara game</label>
+ <label class="row"><input type="checkbox" id="vibrateToggle" checked style="width:auto"> Getaran (jika didukung)</label>
+ <button class="primary" id="saveSettings" style="margin-top:12px">SIMPAN PENGATURAN</button></div>
+ <div class="panel"><h3>Fullscreen & orientasi</h3><p class="small">Chrome Android tidak mengizinkan halaman memaksa fullscreen atau landscape tanpa interaksi pengguna. Game akan meminta fullscreen dan mencoba mengunci landscape saat kamu mulai bermain.</p></div>
+</section>
+<section id="battle" class="screen">
+ <canvas id="gameCanvas"></canvas>
+ <div class="hud">
+  <div class="hudbox"><b id="myHudName">YOU</b><div class="health"><i id="myHp"></i></div><span id="myScore">0 KILL</span></div>
+  <div class="hudbox"><b id="roundHud">ROUND 1 / 5</b><div style="font-size:18px;font-weight:1000" id="scoreHud">0 - 0</div><span id="timerHud">00:00</span></div>
+  <div class="hudbox"><b id="enemyHudName">ENEMY</b><div class="health"><i id="enemyHp" style="background:linear-gradient(90deg,#55d9ff,#7c8bff)"></i></div><span id="enemyScore">0 KILL</span></div>
+ </div>
+ <button class="ghost" id="leave">KELUAR</button>
+ <div id="battleMsg"></div><div id="countdown"></div>
+ <div id="controls">
+  <div id="stickArea"><div id="stick"></div></div>
+  <div class="actions">
+   <button class="act" id="shield"><b>🛡</b>SHIELD<small>5s</small></button>
+   <button class="act" id="skill1"><b>✦</b>SKILL 1<small id="cd1"></small></button>
+   <button class="act" id="skill2"><b>✧</b>SKILL 2<small id="cd2"></small></button>
+   <button class="act" id="attack"><b>⚔</b>ATTACK</button>
+   <button class="act" id="skill3"><b>☄</b>ULTI<small id="cd3"></small></button>
+   <button class="act" id="jump"><b>⬆</b>JUMP</button>
   </div>
-
-  <!-- Firebase Scripts -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBm1tRxzF59ESfPW8KYLIy3ZD2I_jbL73k",
-      authDomain: "game-mekuu.firebaseapp.com",
-      projectId: "game-mekuu",
-      storageBucket: "game-mekuu.firebasestorage.app",
-      messagingSenderId: "437350241391",
-      appId: "1:437350241391:web:5c9a81c00a0f901ab6e99a",
-      measurementId: "G-HLXZ3KBSH0"
-    };
-
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'game-mekuu-app';
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    window.currentUserDoc = null;
-    window.firebaseAuthUser = null;
-
-    window.HEROES_DATA = [
-      { id: 'miya', name: 'Miya', type: 'Marksman', priceGold: 1500, priceDiamond: 0, color: '#38bdf8' },
-      { id: 'zilong', name: 'Zilong', type: 'Fighter', priceGold: 3200, priceDiamond: 0, color: '#f59e0b' },
-      { id: 'eudora', name: 'Eudora', type: 'Mage', priceGold: 6500, priceDiamond: 0, color: '#a855f7' }
-    ];
-
-    window.SKINS_DATA = [
-      { id: 'miya_anime', heroId: 'miya', name: 'Cyber Arrow Anime', priceDiamond: 34 },
-      { id: 'zilong_god', heroId: 'zilong', name: 'War God Spear', priceDiamond: 50 },
-      { id: 'eudora_cosmic', heroId: 'eudora', name: 'Cosmic Nebula', priceDiamond: 88 }
-    ];
-
-    window.EQUIPMENT_DATA = [
-      { id: 'boots', name: 'CD Boots', desc: '+15% Cooldown Reduction', cdr: 0.15, attack: 0, hp: 100 },
-      { id: 'windtalker', name: 'Windtalker', desc: '+25% Atk Speed & +10% Crit', atkSpd: 0.25, attack: 20, crit: 0.10 },
-      { id: 'haas', name: 'Haas Claws', desc: '+40 Physical Atk & +15% Lifesteal', attack: 40, lifesteal: 0.15 },
-      { id: 'scarlet', name: 'Scarlet Phantom', desc: '+30 Atk Spd +15% Crit', atkSpd: 0.30, attack: 30, crit: 0.15 },
-      { id: 'guardian', name: 'Guardian Armor', desc: '+500 Max HP & +20 HP Regen', hp: 500, hpRegen: 20 }
-    ];
-
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        window.firebaseAuthUser = user;
-        const userRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
-        const snap = await getDoc(userRef);
-
-        if (!snap.exists()) {
-          document.getElementById('usernameModal').classList.remove('hidden');
-        } else {
-          window.currentUserDoc = snap.data();
-          initUserMenuUI();
-        }
-      } else {
-        document.getElementById('loginScreen').classList.remove('hidden');
-        document.getElementById('mainMenuScreen').classList.add('hidden');
-      }
-    });
-
-    window.loginWithGoogle = async function() {
-      const provider = new GoogleAuthProvider();
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (err) {
-        console.error("Auth Error:", err);
-      }
-    };
-
-    window.loginAsGuest = function() {
-      const guestId = 'Guest_' + Math.floor(Math.random()*10000);
-      window.currentUserDoc = {
-        username: guestId,
-        email: 'guest@local',
-        gold: 1500,
-        diamonds: 50,
-        unlockedHeroes: ['miya'],
-        unlockedSkins: [],
-        equippedHero: 'miya',
-        equippedSkin: 'default',
-        build: ['boots', 'windtalker', 'haas', 'scarlet', 'guardian']
-      };
-      initUserMenuUI();
-    };
-
-    window.saveUsername = async function() {
-      const input = document.getElementById('usernameInput').value.trim();
-      const errEl = document.getElementById('usernameError');
-      
-      const validRegex = /^[a-zA-Z0-9_]+$/;
-      if (!input || !validRegex.test(input)) {
-        errEl.innerText = "Invalid! Only letters, numbers & (_) allowed. No emojis.";
-        errEl.classList.remove('hidden');
-        return;
-      }
-
-      const user = window.firebaseAuthUser;
-      if (!user) return;
-
-      const isSpecial = (user.email === 'anton.id.dunia@gmail.com');
-
-      const profileData = {
-        username: input,
-        email: user.email || '',
-        gold: isSpecial ? 20000 : 1500,
-        diamonds: isSpecial ? 1000 : 50,
-        isVerified: isSpecial,
-        unlockedHeroes: ['miya'],
-        unlockedSkins: [],
-        equippedHero: 'miya',
-        equippedSkin: 'default',
-        build: ['boots', 'windtalker', 'haas', 'scarlet', 'guardian']
-      };
-
-      const userRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
-      await setDoc(userRef, profileData);
-      window.currentUserDoc = profileData;
-
-      document.getElementById('usernameModal').classList.add('hidden');
-      initUserMenuUI();
-    };
-
-    window.saveProfileToCloud = async function() {
-      if (window.firebaseAuthUser && window.currentUserDoc) {
-        const userRef = doc(db, 'artifacts', appId, 'users', window.firebaseAuthUser.uid, 'profile', 'data');
-        await setDoc(userRef, window.currentUserDoc, { merge: true });
-      }
-    };
-  </script>
-
-  <!-- Audio Engine & Canvas Main Game Code -->
-  <script>
-    /* AudioContext Sound FX Generator */
-    class SoundEngine {
-      constructor() { this.ctx = null; }
-      init() {
-        if (!this.ctx) {
-          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-      }
-      playCountdown(isFight = false) {
-        this.init();
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.frequency.setValueAtTime(isFight ? 880 : 440, this.ctx.currentTime);
-        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + (isFight ? 0.5 : 0.25));
-        osc.start();
-        osc.stop(this.ctx.currentTime + (isFight ? 0.5 : 0.25));
-      }
-      playBasicAtk() {
-        this.init();
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'triangle';
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.frequency.setValueAtTime(320, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.1);
-        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.1);
-      }
-      playSkill1() {
-        this.init();
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.frequency.setValueAtTime(550, this.ctx.currentTime);
-        osc.frequency.linearRampToValueAtTime(1100, this.ctx.currentTime + 0.2);
-        gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.2);
-      }
-      playSkill2() {
-        this.init();
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.frequency.setValueAtTime(250, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(750, this.ctx.currentTime + 0.25);
-        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.25);
-      }
-      playUlti() {
-        this.init();
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'square';
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.frequency.setValueAtTime(160, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.5);
-        gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.5);
-      }
-      playVictory() {
-        this.init();
-        [261.63, 329.63, 392.00, 523.25].forEach((freq, idx) => {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.frequency.value = freq;
-          gain.gain.setValueAtTime(0.2, this.ctx.currentTime + idx * 0.12);
-          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + idx * 0.12 + 0.35);
-          osc.start(this.ctx.currentTime + idx * 0.12);
-          osc.stop(this.ctx.currentTime + idx * 0.12 + 0.35);
-        });
-      }
-      playDefeat() {
-        this.init();
-        [300, 250, 200, 150].forEach((freq, idx) => {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.frequency.value = freq;
-          gain.gain.setValueAtTime(0.2, this.ctx.currentTime + idx * 0.15);
-          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + idx * 0.15 + 0.4);
-          osc.start(this.ctx.currentTime + idx * 0.15);
-          osc.stop(this.ctx.currentTime + idx * 0.15 + 0.4);
-        });
-      }
-    }
-    const audioSFX = new SoundEngine();
-
-    /* Game Variables */
-    let canvas, ctx;
-    let gameRunning = false;
-    let selectedBotDifficulty = 'EASY';
-    let p1Score = 0, p2Score = 0;
-    let player1 = null, player2 = null;
-    let projectiles = [];
-    let particles = [];
-    let screenShakeTime = 0;
-    let lastFrameTime = 0;
-
-    class Fighter {
-      constructor(x, y, isBot = false, heroId = 'miya', skinId = 'default') {
-        this.x = x;
-        this.y = y;
-        this.vx = 0;
-        this.vy = 0;
-        this.width = 44;
-        this.height = 70;
-        this.isBot = isBot;
-        this.heroId = heroId;
-        this.skinId = skinId;
-
-        this.maxHp = 1000;
-        this.hp = 1000;
-        this.facing = isBot ? -1 : 1;
-        
-        this.attackDmg = 80;
-        this.atkSpd = 1.0;
-        this.critChance = 0.05;
-        this.lifesteal = 0.0;
-        this.cdr = 0.0;
-        this.hpRegen = 2;
-
-        this.shieldActive = false;
-        this.shieldMeter = 5.0;
-        this.shieldMax = 5.0;
-        this.shieldCD = 0.0;
-
-        this.cd1 = 0;
-        this.cd2 = 0;
-        this.cdUlti = 0;
-
-        this.applyEquipmentBuild();
-      }
-
-      applyEquipmentBuild() {
-        const build = window.currentUserDoc ? window.currentUserDoc.build : ['boots'];
-        build.forEach(itemId => {
-          const item = window.EQUIPMENT_DATA.find(i => i.id === itemId);
-          if (item) {
-            if (item.hp) this.maxHp += item.hp;
-            if (item.attack) this.attackDmg += item.attack;
-            if (item.atkSpd) this.atkSpd += item.atkSpd;
-            if (item.crit) this.critChance += item.crit;
-            if (item.lifesteal) this.lifesteal += item.lifesteal;
-            if (item.cdr) this.cdr += item.cdr;
-            if (item.hpRegen) this.hpRegen += item.hpRegen;
-          }
-        });
-        this.hp = this.maxHp;
-      }
-
-      update(dt) {
-        this.vy += 1200 * dt;
-        this.x += this.vx * dt;
-        this.y += this.vy * dt;
-
-        const floorY = canvas.height - 100;
-        if (this.y + this.height >= floorY) {
-          this.y = floorY - this.height;
-          this.vy = 0;
-        }
-
-        if (this.x < 20) this.x = 20;
-        if (this.x + this.width > canvas.width - 20) this.x = canvas.width - 20 - this.width;
-
-        if (this.shieldActive) {
-          this.shieldMeter -= dt;
-          if (this.shieldMeter <= 0) {
-            this.shieldActive = false;
-            this.shieldCD = 5.0;
-          }
-        } else {
-          if (this.shieldMeter < this.shieldMax && this.shieldCD <= 0) {
-            this.shieldMeter = Math.min(this.shieldMax, this.shieldMeter + dt * 0.8);
-          }
-        }
-
-        if (this.shieldCD > 0) this.shieldCD -= dt;
-        if (this.cd1 > 0) this.cd1 -= dt;
-        if (this.cd2 > 0) this.cd2 -= dt;
-        if (this.cdUlti > 0) this.cdUlti -= dt;
-
-        if (this.hp < this.maxHp) {
-          this.hp = Math.min(this.maxHp, this.hp + this.hpRegen * dt);
-        }
-      }
-
-      basicAttack(target) {
-        if (this.shieldActive) return;
-        audioSFX.playBasicAtk();
-        
-        const isCrit = Math.random() < this.critChance;
-        const dmg = this.attackDmg * (isCrit ? 1.8 : 1.0);
-
-        if (this.heroId === 'miya') {
-          projectiles.push(new Projectile(
-            this.x + (this.facing > 0 ? this.width : 0),
-            this.y + 25,
-            this.facing * 650, 0,
-            dmg, this, 'arrow'
-          ));
-        } else {
-          if (Math.abs((this.x + this.width/2) - (target.x + target.width/2)) < 80) {
-            target.takeDamage(dmg, this);
-            spawnHitParticles(target.x + 20, target.y + 30, '#f59e0b');
-          }
-        }
-      }
-
-      useSkill1(target) {
-        if (this.cd1 > 0 || this.shieldActive) return;
-        this.cd1 = 3.0 * (1 - this.cdr);
-        audioSFX.playSkill1();
-
-        if (this.heroId === 'miya') {
-          [-120, 0, 120].forEach(vy => {
-            projectiles.push(new Projectile(
-              this.x + (this.facing > 0 ? this.width : 0),
-              this.y + 25,
-              this.facing * 650, vy,
-              this.attackDmg * 0.9, this, 'arrow_cyan'
-            ));
-          });
-        } else {
-          this.vx = this.facing * 750;
-          if (Math.abs(this.x - target.x) < 100) target.takeDamage(this.attackDmg * 1.4, this);
-        }
-      }
-
-      useSkill2(target) {
-        if (this.cd2 > 0 || this.shieldActive) return;
-        this.cd2 = 5.0 * (1 - this.cdr);
-        audioSFX.playSkill2();
-
-        projectiles.push(new Projectile(
-          target.x + target.width/2,
-          target.y + target.height/2,
-          0, 0,
-          this.attackDmg * 1.3, this, 'aoe'
-        ));
-      }
-
-      useUlti(target) {
-        if (this.cdUlti > 0 || this.shieldActive) return;
-        this.cdUlti = 12.0 * (1 - this.cdr);
-        audioSFX.playUlti();
-        screenShakeTime = 0.3;
-
-        for (let i = 0; i < 6; i++) {
-          setTimeout(() => {
-            projectiles.push(new Projectile(
-              target.x - 60 + Math.random()*120,
-              0, 0, 700,
-              this.attackDmg * 0.8, this, 'arrow_rain'
-            ));
-          }, i * 70);
-        }
-      }
-
-      takeDamage(amount, attacker) {
-        if (this.shieldActive) amount *= 0.3;
-        this.hp -= amount;
-
-        if (attacker && attacker.lifesteal > 0) {
-          attacker.hp = Math.min(attacker.maxHp, attacker.hp + amount * attacker.lifesteal);
-        }
-
-        if (this.hp <= 0) {
-          this.hp = 0;
-          handleFighterKilled(this);
-        }
-      }
-
-      draw(ctx) {
-        ctx.save();
-        ctx.translate(this.x + this.width/2, this.y + this.height/2);
-        ctx.scale(this.facing, 1);
-
-        const heroColor = (this.heroId === 'miya' ? '#38bdf8' : (this.heroId === 'zilong' ? '#f59e0b' : '#a855f7'));
-        ctx.shadowColor = heroColor;
-        ctx.shadowBlur = 12;
-
-        ctx.fillStyle = heroColor;
-        ctx.fillRect(-15, -20, 30, 45);
-
-        ctx.fillStyle = '#fde047';
-        ctx.beginPath();
-        ctx.arc(0, -28, 14, 0, Math.PI*2);
-        ctx.fill();
-
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 3;
-        if (this.heroId === 'miya') {
-          ctx.beginPath();
-          ctx.arc(15, -5, 18, -Math.PI/3, Math.PI/3);
-          ctx.stroke();
-        }
-
-        if (this.shieldActive) {
-          ctx.strokeStyle = '#38bdf8';
-          ctx.lineWidth = 4;
-          ctx.beginPath();
-          ctx.arc(0, 0, 42, 0, Math.PI*2);
-          ctx.stroke();
-          ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
-          ctx.fill();
-        }
-
-        ctx.restore();
-
-        const barW = 50, barH = 6;
-        const barX = this.x + this.width/2 - barW/2;
-        const barY = this.y - 18;
-        ctx.fillStyle = 'rgba(0,0,0,0.6)';
-        ctx.fillRect(barX, barY, barW, barH);
-        ctx.fillStyle = this.isBot ? '#ef4444' : '#22c55e';
-        ctx.fillRect(barX, barY, barW * (this.hp / this.maxHp), barH);
-      }
-    }
-
-    class Projectile {
-      constructor(x, y, vx, vy, damage, owner, type) {
-        this.x = x;
-        this.y = y;
-        this.vx = vx;
-        this.vy = vy;
-        this.damage = damage;
-        this.owner = owner;
-        this.type = type;
-        this.radius = type === 'aoe' ? 35 : 8;
-        this.active = true;
-        this.life = type === 'aoe' ? 0.2 : 5;
-      }
-      update(dt) {
-        this.x += this.vx * dt;
-        this.y += this.vy * dt;
-        this.life -= dt;
-
-        if (this.life <= 0) this.active = false;
-
-        const opponent = (this.owner === player1) ? player2 : player1;
-        if (opponent && this.active) {
-          if (Math.abs(this.x - (opponent.x + opponent.width/2)) < 30 &&
-              Math.abs(this.y - (opponent.y + opponent.height/2)) < 40) {
-            opponent.takeDamage(this.damage, this.owner);
-            this.active = false;
-            spawnHitParticles(this.x, this.y, '#38bdf8');
-          }
-        }
-      }
-      draw(ctx) {
-        ctx.save();
-        ctx.fillStyle = '#38bdf8';
-        ctx.shadowColor = '#38bdf8';
-        ctx.shadowBlur = 10;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
-        ctx.fill();
-        ctx.restore();
-      }
-    }
-
-    function spawnHitParticles(x, y, color) {
-      for (let i = 0; i < 8; i++) {
-        particles.push({
-          x: x, y: y,
-          vx: (Math.random() - 0.5) * 250,
-          vy: (Math.random() - 0.5) * 250,
-          life: 0.3,
-          color: color
-        });
-      }
-    }
-
-    function updateBotAI(dt) {
-      if (!player2 || !player2.isBot || !player1) return;
-      const dist = Math.abs((player2.x + player2.width/2) - (player1.x + player1.width/2));
-      player2.facing = (player1.x > player2.x) ? 1 : -1;
-
-      if (selectedBotDifficulty === 'EASY') {
-        if (dist > 140) player2.vx = player2.facing * 120;
-        else {
-          player2.vx = 0;
-          if (Math.random() < 0.02) player2.basicAttack(player1);
-        }
-      } else if (selectedBotDifficulty === 'NORMAL') {
-        if (dist > 100) player2.vx = player2.facing * 180;
-        else {
-          player2.vx = 0;
-          if (Math.random() < 0.04) player2.basicAttack(player1);
-          if (Math.random() < 0.02) player2.useSkill1(player1);
-        }
-      } else if (selectedBotDifficulty === 'HARD') {
-        if (dist > 80) player2.vx = player2.facing * 260;
-        else {
-          player2.vx = 0;
-          if (Math.random() < 0.06) player2.basicAttack(player1);
-          if (Math.random() < 0.03) player2.useSkill1(player1);
-          if (Math.random() < 0.02) player2.useSkill2(player1);
-        }
-      } else if (selectedBotDifficulty === 'AI_HARD') {
-        if (player2.hp < player2.maxHp * 0.3 && player2.shieldCD <= 0) {
-          player2.shieldActive = true;
-        } else player2.shieldActive = false;
-
-        if (dist > 70) player2.vx = player2.facing * 320;
-        else {
-          player2.vx = 0;
-          player2.basicAttack(player1);
-          if (player2.cd1 <= 0) player2.useSkill1(player1);
-          if (player2.cd2 <= 0) player2.useSkill2(player1);
-          if (player2.cdUlti <= 0) player2.useUlti(player1);
-        }
-      }
-    }
-
-    function initGameCanvas() {
-      canvas = document.getElementById('gameCanvas');
-      ctx = canvas.getContext('2d');
-      resizeCanvas();
-      window.addEventListener('resize', resizeCanvas);
-    }
-
-    function resizeCanvas() {
-      if (!canvas) return;
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-
-    function startNewMatch() {
-      document.getElementById('draftModal').classList.add('hidden');
-      document.getElementById('gameplayScreen').classList.remove('hidden');
-
-      resizeCanvas();
-
-      const user = window.currentUserDoc;
-      const p1Hero = user ? user.equippedHero : 'miya';
-      const p1Skin = user ? user.equippedSkin : 'default';
-
-      player1 = new Fighter(100, canvas.height - 200, false, p1Hero, p1Skin);
-      player2 = new Fighter(canvas.width - 150, canvas.height - 200, true, 'zilong', 'default');
-      projectiles = [];
-      particles = [];
-
-      p1Score = 0;
-      p2Score = 0;
-      document.getElementById('p1Score').innerText = 0;
-      document.getElementById('p2Score').innerText = 0;
-
-      startCountdownRound();
-    }
-
-    function startCountdownRound() {
-      gameRunning = false;
-      const overlay = document.getElementById('countdownOverlay');
-      const text = document.getElementById('countdownText');
-      overlay.classList.remove('hidden');
-
-      let count = 3;
-      text.innerText = count;
-      audioSFX.playCountdown(false);
-
-      const timer = setInterval(() => {
-        count--;
-        if (count > 0) {
-          text.innerText = count;
-          audioSFX.playCountdown(false);
-        } else if (count === 0) {
-          text.innerText = "FIGHT!";
-          audioSFX.playCountdown(true);
-        } else {
-          clearInterval(timer);
-          overlay.classList.add('hidden');
-          gameRunning = true;
-          lastFrameTime = performance.now();
-          requestAnimationFrame(gameLoop);
-        }
-      }, 1000);
-    }
-
-    function gameLoop(now) {
-      if (!gameRunning) return;
-
-      const dt = Math.min((now - lastFrameTime) / 1000, 0.1);
-      lastFrameTime = now;
-
-      updateBotAI(dt);
-      player1.update(dt);
-      player2.update(dt);
-
-      projectiles.forEach(p => p.update(dt));
-      projectiles = projectiles.filter(p => p.active);
-
-      particles.forEach(pt => {
-        pt.x += pt.vx * dt;
-        pt.y += pt.vy * dt;
-        pt.life -= dt;
-      });
-      particles = particles.filter(pt => pt.life > 0);
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      ctx.save();
-      if (screenShakeTime > 0) {
-        screenShakeTime -= dt;
-        ctx.translate((Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10);
-      }
-
-      const floorY = canvas.height - 100;
-      ctx.fillStyle = '#0f172a';
-      ctx.fillRect(0, floorY, canvas.width, 100);
-      ctx.strokeStyle = '#38bdf8';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(0, floorY);
-      ctx.lineTo(canvas.width, floorY);
-      ctx.stroke();
-
-      player1.draw(ctx);
-      player2.draw(ctx);
-      projectiles.forEach(p => p.draw(ctx));
-      particles.forEach(pt => {
-        ctx.fillStyle = pt.color;
-        ctx.fillRect(pt.x, pt.y, 4, 4);
-      });
-
-      ctx.restore();
-
-      updateHUDCooldowns();
-      requestAnimationFrame(gameLoop);
-    }
-
-    function handleFighterKilled(deadFighter) {
-      gameRunning = false;
-      if (deadFighter === player2) p1Score++;
-      else p2Score++;
-
-      document.getElementById('p1Score').innerText = p1Score;
-      document.getElementById('p2Score').innerText = p2Score;
-
-      if (p1Score >= 2 || p2Score >= 2) {
-        showMatchResult(p1Score > p2Score);
-      } else {
-        setTimeout(() => {
-          player1.x = 100;
-          player1.hp = player1.maxHp;
-          player2.x = canvas.width - 150;
-          player2.hp = player2.maxHp;
-          startCountdownRound();
-        }, 1500);
-      }
-    }
-
-    function showMatchResult(isWin) {
-      const modal = document.getElementById('matchResultModal');
-      const title = document.getElementById('resultTitle');
-      modal.classList.remove('hidden');
-
-      if (isWin) {
-        title.innerText = "VICTORY!";
-        title.className = "font-black font-orbitron text-6xl text-amber-400 mb-2 glow-gold";
-        audioSFX.playVictory();
-
-        if (window.currentUserDoc) {
-          window.currentUserDoc.gold += 300;
-          window.currentUserDoc.diamonds += 5;
-          window.saveProfileToCloud();
-          updateCurrenciesUI();
-        }
-      } else {
-        title.innerText = "DEFEAT";
-        title.className = "font-black font-orbitron text-6xl text-red-500 mb-2 glow-purple";
-        audioSFX.playDefeat();
-      }
-    }
-
-    window.exitMatchToMenu = function() {
-      document.getElementById('matchResultModal').classList.add('hidden');
-      document.getElementById('gameplayScreen').classList.add('hidden');
-      document.getElementById('mainMenuScreen').classList.remove('hidden');
-    };
-
-    window.initUserMenuUI = function() {
-      document.getElementById('loginScreen').classList.add('hidden');
-      document.getElementById('mainMenuScreen').classList.remove('hidden');
-
-      const u = window.currentUserDoc;
-      if (!u) return;
-
-      document.getElementById('displayUsername').innerText = u.username;
-      document.getElementById('userEmail').innerText = u.email;
-      document.getElementById('userAvatar').innerText = u.username.charAt(0).toUpperCase();
-
-      if (u.isVerified) {
-        document.getElementById('verifiedBadge').classList.remove('hidden');
-      }
-
-      updateCurrenciesUI();
-      applyHUDLayoutToScreen();
-      initGameCanvas();
-    };
-
-    function updateCurrenciesUI() {
-      const u = window.currentUserDoc;
-      if (!u) return;
-      document.getElementById('goldDisplay').innerText = u.gold;
-      document.getElementById('diamondDisplay').innerText = u.diamonds;
-      document.getElementById('shopGoldDisplay').innerText = u.gold;
-      document.getElementById('shopDiamondDisplay').innerText = u.diamonds;
-    }
-
-    window.requestLandscapeFullscreen = function() {
-      const elem = document.documentElement;
-      if (elem.requestFullscreen) elem.requestFullscreen();
-      else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
-      if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('landscape').catch(() => {});
-      }
-      document.getElementById('landscapePrompt').classList.add('hidden');
-    };
-
-    window.openBotModeModal = function() { document.getElementById('botModal').classList.remove('hidden'); };
-    window.closeBotModal = function() { document.getElementById('botModal').classList.add('hidden'); };
-
-    window.selectBotDifficulty = function(diff) {
-      selectedBotDifficulty = diff;
-      closeBotModal();
-      openDraftModal();
-    };
-
-    window.openDraftModal = function() {
-      document.getElementById('draftModal').classList.remove('hidden');
-      renderDraftHeroes();
-    };
-
-    function renderDraftHeroes() {
-      const container = document.getElementById('draftHeroContainer');
-      container.innerHTML = '';
-      window.HEROES_DATA.forEach(h => {
-        const isUnlocked = window.currentUserDoc ? window.currentUserDoc.unlockedHeroes.includes(h.id) : true;
-        const card = document.createElement('div');
-        card.className = `w-40 h-52 rounded-2xl glass-panel border p-4 flex flex-col justify-between cursor-pointer transition-all ${
-          isUnlocked ? 'border-cyan-500/50 hover:border-cyan-400' : 'opacity-50 border-slate-700'
-        }`;
-        card.onclick = () => selectHeroDraft(h.id);
-        card.innerHTML = `
-          <div class="font-orbitron font-bold text-lg text-white">${h.name}</div>
-          <div class="text-xs text-cyan-400 font-orbitron">${h.type}</div>
-          <div class="text-[10px] text-slate-400">${isUnlocked ? 'UNLOCKED' : 'LOCKED'}</div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    function selectHeroDraft(heroId) {
-      if (window.currentUserDoc) window.currentUserDoc.equippedHero = heroId;
-      document.getElementById('selectedHeroTitle').innerText = heroId.toUpperCase();
-    }
-
-    window.confirmHeroDraft = function() {
-      startNewMatch();
-    };
-
-    window.startMatchmaking = function() {
-      document.getElementById('matchmakingModal').classList.remove('hidden');
-      setTimeout(() => {
-        document.getElementById('matchmakingModal').classList.add('hidden');
-        openDraftModal();
-      }, 2000);
-    };
-    window.cancelMatchmaking = function() {
-      document.getElementById('matchmakingModal').classList.add('hidden');
-    };
-
-    window.openShop = function() {
-      document.getElementById('shopModal').classList.remove('hidden');
-      switchShopTab('heroes');
-    };
-    window.closeShop = function() { document.getElementById('shopModal').classList.add('hidden'); };
-
-    window.switchShopTab = function(tab) {
-      const content = document.getElementById('shopContent');
-      content.innerHTML = '';
-      if (tab === 'heroes') {
-        window.HEROES_DATA.forEach(h => {
-          const isOwned = window.currentUserDoc && window.currentUserDoc.unlockedHeroes.includes(h.id);
-          const div = document.createElement('div');
-          div.className = 'glass-panel p-6 rounded-2xl border border-slate-800 flex flex-col justify-between';
-          div.innerHTML = `
-            <div>
-              <h3 class="font-orbitron font-bold text-xl text-white">${h.name}</h3>
-              <p class="text-xs text-cyan-400 mb-4 font-orbitron">${h.type}</p>
-            </div>
-            ${isOwned ? 
-              '<span class="text-xs font-orbitron text-green-400 font-bold">OWNED</span>' : 
-              `<button onclick="buyHero('${h.id}', ${h.priceGold})" class="py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold font-orbitron text-xs rounded-xl flex items-center justify-center gap-2">
-                BUY <i class="fa-solid fa-coins"></i> ${h.priceGold}
-              </button>`
-            }
-          `;
-          content.appendChild(div);
-        });
-      }
-    };
-
-    window.buyHero = function(heroId, cost) {
-      const u = window.currentUserDoc;
-      if (u && u.gold >= cost) {
-        u.gold -= cost;
-        u.unlockedHeroes.push(heroId);
-        window.saveProfileToCloud();
-        updateCurrenciesUI();
-        switchShopTab('heroes');
-      }
-    };
-
-    window.openBuildModal = function() {
-      document.getElementById('buildModal').classList.remove('hidden');
-      renderBuildUI();
-    };
-    window.closeBuildModal = function() { document.getElementById('buildModal').classList.add('hidden'); };
-
-    function renderBuildUI() {
-      const container = document.getElementById('equippedItemsContainer');
-      const catalogue = document.getElementById('equipmentCatalogue');
-      container.innerHTML = '';
-      catalogue.innerHTML = '';
-      const build = window.currentUserDoc ? window.currentUserDoc.build : [];
-
-      for (let i = 0; i < 5; i++) {
-        const item = window.EQUIPMENT_DATA.find(eq => eq.id === build[i]);
-        const slot = document.createElement('div');
-        slot.className = 'w-12 h-12 rounded-xl bg-slate-900 border border-cyan-500/40 flex items-center justify-center text-xs font-orbitron text-cyan-300 font-bold';
-        slot.innerText = item ? item.name.charAt(0) : '+';
-        container.appendChild(slot);
-      }
-
-      window.EQUIPMENT_DATA.forEach(eq => {
-        const card = document.createElement('div');
-        card.className = 'p-4 bg-slate-900/90 border border-slate-800 rounded-xl flex flex-col justify-between';
-        card.innerHTML = `
-          <div>
-            <h4 class="font-orbitron font-bold text-sm text-white">${eq.name}</h4>
-            <p class="text-[11px] text-slate-400 mt-1">${eq.desc}</p>
-          </div>
-        `;
-        catalogue.appendChild(card);
-      });
-    }
-
-    window.openSettings = function() { document.getElementById('settingsModal').classList.remove('hidden'); };
-    window.closeSettings = function() { document.getElementById('settingsModal').classList.add('hidden'); };
-
-    window.setFPS = function(fps) {
-      document.getElementById('fps30').className = fps===30 ? "flex-1 py-3 bg-cyan-600 rounded-xl font-orbitron font-bold text-xs text-white" : "flex-1 py-3 bg-slate-800 rounded-xl font-orbitron font-bold text-xs border border-slate-700";
-      document.getElementById('fps60').className = fps===60 ? "flex-1 py-3 bg-cyan-600 rounded-xl font-orbitron font-bold text-xs text-white" : "flex-1 py-3 bg-slate-800 rounded-xl font-orbitron font-bold text-xs border border-slate-700";
-    };
-
-    window.openHUDCustomizer = function() {
-      document.getElementById('settingsModal').classList.add('hidden');
-      document.getElementById('hudCustomizerOverlay').classList.remove('hidden');
-    };
-    window.saveHUDCustomizer = function() {
-      document.getElementById('hudCustomizerOverlay').classList.add('hidden');
-      document.getElementById('settingsModal').classList.remove('hidden');
-    };
-
-    function applyHUDLayoutToScreen() {
-      const btnAtk = document.getElementById('btnAtk');
-      const btnShield = document.getElementById('btnShield');
-      const btnS1 = document.getElementById('btnSkill1');
-      const btnS2 = document.getElementById('btnSkill2');
-      const btnUlti = document.getElementById('btnUlti');
-
-      btnAtk.style.width = '64px'; btnAtk.style.height = '64px';
-      btnAtk.style.right = '40px'; btnAtk.style.bottom = '40px';
-
-      btnShield.style.width = '48px'; btnShield.style.height = '48px';
-      btnShield.style.right = '120px'; btnShield.style.bottom = '30px';
-
-      btnS1.style.width = '48px'; btnS1.style.height = '48px';
-      btnS1.style.right = '120px'; btnS1.style.bottom = '100px';
-
-      btnS2.style.width = '48px'; btnS2.style.height = '48px';
-      btnS2.style.right = '60px'; btnS2.style.bottom = '130px';
-
-      btnUlti.style.width = '56px'; btnUlti.style.height = '56px';
-      btnUlti.style.right = '130px'; btnUlti.style.bottom = '175px';
-
-      document.getElementById('hudJoystickContainer').style.left = '40px';
-      document.getElementById('hudJoystickContainer').style.bottom = '40px';
-    }
-
-    function setupInGameTouchControls() {
-      const btnAtk = document.getElementById('btnAtk');
-      const btnShield = document.getElementById('btnShield');
-      const btnS1 = document.getElementById('btnSkill1');
-      const btnS2 = document.getElementById('btnSkill2');
-      const btnUlti = document.getElementById('btnUlti');
-
-      btnAtk.onpointerdown = () => { if (player1) player1.basicAttack(player2); };
-      btnShield.onpointerdown = () => { if (player1 && player1.shieldCD <= 0) player1.shieldActive = true; };
-      btnShield.onpointerup = () => { if (player1) { player1.shieldActive = false; player1.shieldCD = 5.0; } };
-      btnS1.onpointerdown = () => { if (player1) player1.useSkill1(player2); };
-      btnS2.onpointerdown = () => { if (player1) player1.useSkill2(player2); };
-      btnUlti.onpointerdown = () => { if (player1) player1.useUlti(player2); };
-
-      const joyContainer = document.getElementById('hudJoystickContainer');
-      let joyActive = false;
-
-      joyContainer.onpointerdown = (e) => {
-        joyActive = true;
-        joyContainer.setPointerCapture(e.pointerId);
-      };
-      joyContainer.onpointermove = (e) => {
-        if (!joyActive || !player1) return;
-        const rect = joyContainer.getBoundingClientRect();
-        const dx = e.clientX - (rect.left + rect.width/2);
-        if (dx > 15) { player1.vx = 260; player1.facing = 1; }
-        else if (dx < -15) { player1.vx = -260; player1.facing = -1; }
-        else player1.vx = 0;
-      };
-      joyContainer.onpointerup = () => {
-        joyActive = false;
-        if (player1) player1.vx = 0;
-      };
-    }
-
-    function updateHUDCooldowns() {
-      if (!player1) return;
-      const sCD = document.getElementById('shieldCD');
-      if (player1.shieldCD > 0) {
-        sCD.classList.remove('hidden');
-        sCD.innerText = Math.ceil(player1.shieldCD) + 's';
-      } else sCD.classList.add('hidden');
-
-      const s1CD = document.getElementById('skill1CD');
-      if (player1.cd1 > 0) {
-        s1CD.classList.remove('hidden');
-        s1CD.innerText = Math.ceil(player1.cd1) + 's';
-      } else s1CD.classList.add('hidden');
-
-      const s2CD = document.getElementById('skill2CD');
-      if (player1.cd2 > 0) {
-        s2CD.classList.remove('hidden');
-        s2CD.innerText = Math.ceil(player1.cd2) + 's';
-      } else s2CD.classList.add('hidden');
-
-      const uCD = document.getElementById('ultiCD');
-      if (player1.cdUlti > 0) {
-        uCD.classList.remove('hidden');
-        uCD.innerText = Math.ceil(player1.cdUlti) + 's';
-      } else uCD.classList.add('hidden');
-    }
-
-    window.addEventListener('load', () => {
-      setupInGameTouchControls();
-    });
-  </script>
-</body>
-</html>
+ </div>
+ <div id="queueOverlay"><div class="panel"><h2>SEDANG MENCARI LAWAN</h2><div class="spinner"></div><p class="small">Menunggu pemain lain yang memilih 1 VS 1...</p><button class="secondary" id="cancelQueue">BATALKAN</button></div></div>
+ <div id="result"><div class="panel"><div style="font-size:45px" id="resultIcon">🏆</div><h2 id="resultTitle">VICTORY</h2><p id="resultText">Pertandingan selesai</p><button class="primary" id="backHome" style="width:100%">KEMBALI KE MENU</button></div></div>
+</section>
+<div id="toast"></div>
+</div>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,doc,getDoc,setDoc,updateDoc,collection,query,where,limit,getDocs,addDoc,onSnapshot,serverTimestamp,runTransaction,deleteDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig={apiKey:"AIzaSyBm1tRxzF59ESfPW8KYLIy3ZD2I_jbL73k",authDomain:"game-mekuu.firebaseapp.com",projectId:"game-mekuu",messagingSenderId:"437350241391",appId:"1:437350241391:web:5c9a81c00a0f901ab6e99a",measurementId:"G-HLXZ3KBSH0"};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),provider=new GoogleAuthProvider();
+const $=id=>document.getElementById(id);
+let user=null,profile=null,selectedHero="miya",selectedSkin="default",battle=null,queueDoc=null,queueUnsub=null,matchUnsub=null,gameLoop=null,lastSync=0,keys={},touch={x:0,y:0},audioCtx=null;
+const SPECIAL="anton.id.dunia@gmail.com";
+const heroes=[
+ {id:"miya",name:"Miya",role:"Ranger",price:0,icon:"🏹",hp:100,speed:3.3,damage:12,desc:"Serangan jarak jauh dan lincah."},
+ {id:"kael",name:"Kael",role:"Fighter",price:1500,icon:"⚔️",hp:130,speed:2.8,damage:16,desc:"Petarung seimbang dengan serangan kuat."},
+ {id:"nyx",name:"Nyx",role:"Assassin",price:2600,icon:"🌙",hp:90,speed:3.8,damage:10,desc:"Cepat dan ahli menghindari serangan."},
+ {id:"bronn",name:"Bronn",role:"Tank",price:3500,icon:"🛡️",hp:170,speed:2.3,damage:13,desc:"Pertahanan kuat dan sulit dikalahkan."}
+];
+const skins=[{id:"default",name:"Default",hero:"all",price:0,icon:"🎨"},{id:"neon",name:"Neon Pulse",hero:"all",price:34,icon:"💠"},{id:"ember",name:"Ember Knight",hero:"all",price:75,icon:"🔥"},{id:"cosmic",name:"Cosmic Legend",hero:"all",price:150,icon:"🌌"}];
+const ownedDefault=["miya"], ownedSkinsDefault=["default"];
+function toast(s){$("toast").textContent=s;$("toast").style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>$("toast").style.display="none",2600)}
+function show(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(id).classList.add("active")}
+function money(){if(!profile)return;$("gold").textContent=(profile.gold||0).toLocaleString("id-ID");$("diamond").textContent=(profile.diamond||0).toLocaleString("id-ID")}
+function updateProfileUI(){money();$("playerName").textContent=profile.username;$("avatar").textContent=profile.username[0].toUpperCase();$("verifyBadge").innerHTML=user?.email===SPECIAL?' <span class="verified" title="Verified">◆</span>':'';$("rankText").textContent="ROOKIE • "+(profile.wins||0)+" WIN"}
+async function loadProfile(u){
+ user=u;const ref=doc(db,"users",u.uid);let snap=await getDoc(ref);
+ if(!snap.exists()){show("nameScreen");return}
+ profile=snap.data();if(!profile.username){show("nameScreen");return}
+ updateProfileUI();renderHeroes();show("home");
+}
+onAuthStateChanged(auth,async u=>{if(u){try{await loadProfile(u)}catch(e){console.error(e);toast("Gagal memuat profil. Periksa Firestore Rules.")}}else{user=null;profile=null;show("login")}});
+$("googleLogin").onclick=async()=>{try{$("loginStatus").textContent="Menghubungkan Google...";await signInWithPopup(auth,provider)}catch(e){$("loginStatus").textContent="Login gagal: "+e.message}};
+$("saveUsername").onclick=async()=>{
+ const n=$("usernameInput").value.trim();if(!/^[A-Za-z0-9_]{3,16}$/.test(n)){$("nameError").textContent="Username 3–16 karakter. Hanya huruf, angka, underscore.";return}
+ try{
+ const qy=query(collection(db,"users"),where("usernameLower","==",n.toLowerCase()),limit(1)),found=await getDocs(qy);
+ if(!found.empty){$("nameError").textContent="Username sudah digunakan.";return}
+ const special=user.email===SPECIAL;
+ profile={uid:user.uid,email:user.email,username:n,usernameLower:n.toLowerCase(),gold:special?20000:0,diamond:special?1000:0,heroes:ownedDefault,skins:ownedSkinsDefault,selectedHero:"miya",selectedSkin:"default",wins:0,createdAt:serverTimestamp()};
+ await setDoc(doc(db,"users",user.uid),profile);updateProfileUI();renderHeroes();show("home");
+ }catch(e){$("nameError").textContent="Gagal menyimpan: "+e.message}
+};
+$("logout").onclick=async()=>{await signOut(auth)};
+document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{const p=b.dataset.page;show(p);if(p==="heroes")renderHeroes();if(p==="shop")renderShop("hero")});
+function renderHeroes(){$("heroCards").innerHTML="";heroes.forEach(h=>{const own=(profile.heroes||[]).includes(h.id);const el=document.createElement("div");el.className="item";el.innerHTML=`<div class="art">${h.icon}</div><b>${h.name}</b><span class="small">${h.role} • HP ${h.hp}</span><span class="small">${h.desc}</span><button class="${selectedHero===h.id?'primary':'secondary'}">${own?(selectedHero===h.id?'DIPILIH':'PILIH'):'BELI DI SHOP'}</button>`;el.querySelector("button").onclick=()=>{if(own){selectedHero=h.id;toast(h.name+" dipilih");renderHeroes()}else{show("shop");renderShop("hero")}};$("heroCards").append(el)})}
+function renderShop(type){$("shopCards").innerHTML="";const arr=type==="hero"?heroes.filter(h=>h.price>0):skins.filter(s=>s.price>0);arr.forEach(it=>{const owned=type==="hero"?(profile.heroes||[]).includes(it.id):(profile.skins||[]).includes(it.id);const el=document.createElement("div");el.className="item";el.innerHTML=`<div class="art">${it.icon}</div><b>${it.name}</b><span class="small">${type==="hero"?(it.role+" • "+it.desc):"Skin kosmetik • Semua hero"}</span><span class="price">${type==="hero"?"🟡":"💎"} ${it.price.toLocaleString("id-ID")}</span><button class="${owned?'secondary':'primary'}">${owned?"DIMILIKI":"BELI"}</button>`;el.querySelector("button").onclick=()=>buy(type,it);$("shopCards").append(el)})}
+async function buy(type,it){if(type==="hero"&&(profile.heroes||[]).includes(it.id)||type==="skin"&&(profile.skins||[]).includes(it.id)){toast("Sudah dimiliki");return}const field=type==="hero"?"gold":"diamond",owned=type==="hero"?"heroes":"skins";if((profile[field]||0)<it.price){toast("Gold/diamond belum cukup");return}try{const ref=doc(db,"users",user.uid);await runTransaction(db,async tx=>{const s=await tx.get(ref);const d=s.data();if((d[field]||0)<it.price)throw Error("Saldo tidak cukup");tx.update(ref,{[field]:d[field]-it.price,[owned]:[...(d[owned]||[]),it.id]})});profile[field]-=it.price;profile[owned]=[...(profile[owned]||[]),it.id];updateProfileUI();renderShop(type);toast("Berhasil membeli "+it.name)}catch(e){toast(e.message)}}
+$("shopHeroes").onclick=()=>renderShop("hero");$("shopSkins").onclick=()=>renderShop("skin");
+$("saveSettings").onclick=()=>{localStorage.setItem("mekuuLayout",$("controlLayout").value);localStorage.setItem("mekuuSound",$("soundToggle").checked);localStorage.setItem("mekuuVibrate",$("vibrateToggle").checked);toast("Pengaturan disimpan")};
+$("controlLayout").value=localStorage.getItem("mekuuLayout")||"classic";$("soundToggle").checked=localStorage.getItem("mekuuSound")!=="false";$("vibrateToggle").checked=localStorage.getItem("mekuuVibrate")!=="false";
+let measuredHz=60,targetFps=Number(localStorage.getItem("mekuuFps")||60);
+$("fpsSelect").value=String(targetFps);
+async function detectRefreshRate(){
+ const intervals=[];let last=0;
+ await new Promise(resolve=>{const sample=t=>{if(last)intervals.push(t-last);last=t;if(intervals.length<100)requestAnimationFrame(sample);else resolve()};requestAnimationFrame(sample)});
+ const a=intervals.slice(10).sort((x,y)=>x-y),median=a[Math.floor(a.length/2)]||16.67;
+ measuredHz=Math.round(1000/median);
+ if(measuredHz>=85){const opt=document.createElement("option");opt.value="90";opt.textContent="Extreme 90 FPS";$("fpsSelect").append(opt)}
+ $("fpsInfo").textContent=`Refresh browser terukur sekitar ${measuredHz} Hz. Pengukuran dapat berubah mengikuti mode layar dan beban perangkat.`;
+ if(targetFps===90&&measuredHz<85){targetFps=60;$("fpsSelect").value="60"}
+}
+detectRefreshRate();
+$("fpsSelect").onchange=()=>{targetFps=Number($("fpsSelect").value);localStorage.setItem("mekuuFps",String(targetFps));toast("Target "+targetFps+" FPS disimpan")};
+
+function sound(freq=440,dur=.12,type="sine",volume=.09,endFreq=null){
+ if(!$("soundToggle").checked)return;
+ try{audioCtx??=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==="suspended")audioCtx.resume();
+ const o=audioCtx.createOscillator(),g=audioCtx.createGain(),now=audioCtx.currentTime;
+ o.type=type;o.frequency.setValueAtTime(freq,now);if(endFreq)o.frequency.exponentialRampToValueAtTime(Math.max(25,endFreq),now+dur);
+ g.gain.setValueAtTime(volume,now);g.gain.exponentialRampToValueAtTime(.001,now+dur);
+ o.connect(g);g.connect(audioCtx.destination);o.start(now);o.stop(now+dur);
+ }catch(e){console.warn("Audio unavailable",e)}
+}
+function soundCombo(kind){
+ if(kind==="arrow"){sound(780,.07,"triangle",.055,420);setTimeout(()=>sound(330,.06,"sine",.035,180),45)}
+ if(kind==="skill"){sound(420,.18,"sawtooth",.06,950);setTimeout(()=>sound(920,.2,"triangle",.06,520),100)}
+ if(kind==="ultimate"){sound(110,.5,"sawtooth",.11,45);setTimeout(()=>sound(260,.45,"triangle",.1,1200),180);setTimeout(()=>sound(780,.55,"sine",.08,180),360)}
+ if(kind==="impact"){sound(150,.13,"square",.07,55);sound(620,.08,"triangle",.035,240)}
+}
+function vibrate(ms=35){if($("vibrateToggle").checked&&navigator.vibrate)navigator.vibrate(ms)}
+function requestImmersive(){const el=document.documentElement;if(!document.fullscreenElement)el.requestFullscreen?.().catch(()=>{});screen.orientation?.lock?.("landscape").catch(()=>{})}
+$("botMode").onclick=()=>{requestImmersive();startBattle("bot")};
+$("pvpMode").onclick=()=>{requestImmersive();startQueue()};
+$("leave").onclick=()=>endBattle(false);
+$("backHome").onclick=()=>{cleanupMatch();show("home")};
+$("cancelQueue").onclick=()=>{cleanupMatch();show("home")};
+
+async function startQueue(){
+ show("battle");$("queueOverlay").style.display="grid";$("result").style.display="none";$("battleMsg").textContent="";$("countdown").style.display="none";
+ try{
+  const qy=query(collection(db,"queue"),where("status","==","waiting"),limit(10)),snap=await getDocs(qy);let joined=false;
+  for(const d of snap.docs){if(d.data().uid===user.uid)continue;
+   try{await runTransaction(db,async tx=>{const r=await tx.get(d.ref);if(!r.exists()||r.data().status!=="waiting")throw Error("taken");tx.update(d.ref,{status:"matched",opponentUid:user.uid,opponentName:profile.username,matchedAt:serverTimestamp()})});
+    const match=await addDoc(collection(db,"matches"),{players:[d.data().uid,user.uid],names:[d.data().username,profile.username],status:"ready",createdAt:serverTimestamp(),state:{round:1,scores:[0,0],started:false}});queueDoc=d.ref;watchMatch(match.id,1);joined=true;break
+   }catch(e){}
+  }
+  if(!joined){queueDoc=await addDoc(collection(db,"queue"),{uid:user.uid,username:profile.username,status:"waiting",createdAt:serverTimestamp()});queueUnsub=onSnapshot(queueDoc,async s=>{if(s.exists()&&s.data().status==="matched"&&s.data().matchId){watchMatch(s.data().matchId,0)}})}
+ }catch(e){toast("Matchmaking gagal. Periksa Firestore Rules.");$("queueOverlay").style.display="none";show("home")}
+}
+async function watchMatch(id,index){
+ $("queueOverlay").style.display="none";const ref=doc(db,"matches",id);
+ // Pairing is intentionally prototype-level; the match creator assigns the shared match id to the waiting queue entry.
+ try{await updateDoc(queueDoc,{matchId:id}).catch(()=>{});}catch{}
+ matchUnsub=onSnapshot(ref,s=>{if(!s.exists())return;const d=s.data();if(d.status==="ready"&&!battle){startBattle("pvp",id,index,d)}else if(d.state&&battle?.matchId===id){battle.remote=d.state;draw();}});
+}
+function cleanupMatch(){queueUnsub?.();matchUnsub?.();queueUnsub=null;matchUnsub=null;if(queueDoc&&user)deleteDoc(queueDoc).catch(()=>{});queueDoc=null; if(gameLoop)cancelAnimationFrame(gameLoop);gameLoop=null;battle=null;$("queueOverlay").style.display="none";$("result").style.display="none"}
+function startBattle(mode,matchId=null,index=0,matchData=null){
+ show("battle");
+ cleanupGameOnly();previousFrame=0;battle={mode,matchId,index,me:{x:160,y:0,vx:0,vy:0,hp:100,shield:0,score:0,face:1,ground:true},enemy:{x:500,y:0,vx:0,vy:0,hp:100,shield:0,score:0,face:-1,ground:true},round:1,scores:[0,0],start:Date.now(),lastAttack:0,cooldowns:{s1:0,s2:0,s3:0},ended:false,remote:null,effects:[],projectiles:[],shake:0,flash:0};
+ if(mode==="pvp"&&matchData?.state){battle.scores=matchData.state.scores||[0,0];battle.round=matchData.state.round||1}
+ $("queueOverlay").style.display="none";$("result").style.display="none";$("myHudName").textContent=profile.username;$("enemyHudName").textContent=mode==="bot"?"ARENA BOT":"PLAYER";$("battleMsg").textContent=mode==="bot"?"BOT CHALLENGE":"PLAYER FOUND";sound(660,.2);countdown();
+}
+function cleanupGameOnly(){if(gameLoop)cancelAnimationFrame(gameLoop);gameLoop=null}
+function countdown(){let n=3;$("countdown").style.display="grid";$("countdown").textContent=n;sound(440,.15);const t=setInterval(()=>{n--;if(n>0){$("countdown").textContent=n;sound(440,.15)}else if(n===0){$("countdown").textContent="FIGHT!";sound(880,.35,"triangle")}else{$("countdown").style.display="none";clearInterval(t);battle.start=Date.now();loop()}},850)}
+const canvas=$("gameCanvas"),ctx=canvas.getContext("2d");
+function resize(){const dpr=Math.min(devicePixelRatio||1,2);canvas.width=innerWidth*dpr;canvas.height=innerHeight*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener("resize",resize);resize();
+function addBurst(x,y,color,count=14,power=5){
+ if(!battle)return;
+ for(let i=0;i<count;i++){const a=Math.PI*2*i/count+(Math.random()-.5)*.35,v=power*(.45+Math.random()*.8);battle.effects.push({type:"particle",x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1,max:1,color,size:2+Math.random()*4})}
+}
+function addRing(x,y,color="#73eaff",size=24){battle.effects.push({type:"ring",x,y,r:8,max:size,life:1,color})}
+function shootArrow(from,to,damage=12,spread=0,kind="arrow"){
+ const dir=to.x>=from.x?1:-1;
+ battle.projectiles.push({x:from.x+dir*20,y:from.y+48,vx:dir*(8.5+Math.random()),vy:spread,damage,life:90,kind,angle:dir>0?0:Math.PI});
+}
+function updateEffects(dt){
+ if(!battle)return;
+ for(const p of battle.projectiles){
+  p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy*=Math.pow(.995,dt);p.life-=dt;
+  const target=battle.enemy;
+  if(Math.abs(p.x-target.x)<22&&Math.abs(p.y-(target.y+45))<48){
+   hit(battle.me,target,p.damage);addBurst(p.x,p.y,"#9ff4ff",12,4);addRing(p.x,p.y,"#b6f7ff",28);p.life=0;soundCombo("impact");
+  }
+ }
+ battle.projectiles=battle.projectiles.filter(p=>p.life>0&&p.x>-40&&p.x<innerWidth+40);
+ for(const e of battle.effects){e.life-=.035*dt;if(e.type==="particle"){e.x+=e.vx*dt;e.y+=e.vy*dt;e.vy-=.12*dt;e.vx*=.98}else e.r+=(e.max-e.r)*.18*dt}
+ battle.effects=battle.effects.filter(e=>e.life>0);
+}
+function renderEffects(floor){
+ if(!battle)return;
+ for(const p of battle.projectiles){
+  ctx.save();ctx.translate(p.x,floor-p.y);ctx.rotate(p.angle);
+  ctx.shadowColor="#75eaff";ctx.shadowBlur=14;ctx.strokeStyle="#d8fbff";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-19,0);ctx.lineTo(13,0);ctx.stroke();
+  ctx.fillStyle="#77eaff";ctx.beginPath();ctx.moveTo(18,0);ctx.lineTo(7,-6);ctx.lineTo(7,6);ctx.closePath();ctx.fill();ctx.restore();
+ }
+ for(const e of battle.effects){
+  ctx.save();ctx.globalAlpha=Math.max(0,e.life);
+  if(e.type==="particle"){ctx.fillStyle=e.color;ctx.shadowColor=e.color;ctx.shadowBlur=12;ctx.beginPath();ctx.arc(e.x,floor-e.y,e.size*e.life,0,Math.PI*2);ctx.fill()}
+  else{ctx.strokeStyle=e.color;ctx.lineWidth=4*e.life;ctx.shadowColor=e.color;ctx.shadowBlur=18;ctx.beginPath();ctx.arc(e.x,floor-e.y,e.r,0,Math.PI*2);ctx.stroke()}
+  ctx.restore();
+ }
+ if(battle.flash>0){ctx.fillStyle=`rgba(150,225,255,${battle.flash})`;ctx.fillRect(0,0,innerWidth,innerHeight);battle.flash=Math.max(0,battle.flash-.045)}
+}
+function draw(){
+ if(!battle)return;const w=innerWidth,h=innerHeight;ctx.clearRect(0,0,w,h);
+ const floor=h*.73;let grd=ctx.createLinearGradient(0,0,0,h);grd.addColorStop(0,"#17274b");grd.addColorStop(.65,"#263c65");grd.addColorStop(1,"#111a30");ctx.fillStyle=grd;ctx.fillRect(0,0,w,h);
+ // stylized arena skyline
+ for(let i=0;i<12;i++){let x=i*w/10;ctx.fillStyle=i%2?"#31476c":"#202f50";ctx.fillRect(x,floor-70-(i%3)*25,w/14,100)}
+ ctx.fillStyle="#182542";ctx.fillRect(0,floor,w,h-floor);ctx.fillStyle="#4b6d91";ctx.fillRect(0,floor,w,3);
+ for(let i=0;i<10;i++){ctx.fillStyle="#5deaff22";ctx.fillRect(i*w/10,floor+15,2,45)}
+ const drawF=(p,color,skin)=>{let x=p.x,y=floor-p.y;const t=performance.now()/150,moving=Math.abs(p.vx||0)>.2,bob=moving?Math.abs(Math.sin(t))*3:Math.sin(t*.45)*1.8,step=moving?Math.sin(t*1.6)*7:Math.sin(t*.35)*1.2;
+ ctx.save();ctx.translate(x,y-bob);ctx.scale(p.face||1,1);
+ ctx.fillStyle="#0008";ctx.beginPath();ctx.ellipse(0,2,25,7,0,0,Math.PI*2);ctx.fill();
+ const cape=ctx.createLinearGradient(-15,-60,-36,-8);cape.addColorStop(0,skin==="neon"?"#a0ffff":"#a7baff");cape.addColorStop(1,"#343b79");ctx.fillStyle=cape;ctx.beginPath();ctx.moveTo(-10,-58);ctx.quadraticCurveTo(-37,-42,-27+Math.sin(t)*3,-8);ctx.quadraticCurveTo(-9,-19,2,-38);ctx.closePath();ctx.fill();
+ ctx.strokeStyle="#202a50";ctx.lineWidth=9;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-7,-20);ctx.lineTo(-9+step,-4);ctx.moveTo(7,-20);ctx.lineTo(9-step,-4);ctx.stroke();
+ ctx.strokeStyle="#d8eaff";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-9+step,-4);ctx.lineTo(-16+step,-3);ctx.moveTo(9-step,-4);ctx.lineTo(16-step,-3);ctx.stroke();
+ const armor=ctx.createLinearGradient(-15,-58,17,-24);armor.addColorStop(0,skin==="neon"?"#a3ffff":color);armor.addColorStop(.55,skin==="ember"?"#ff995f":"#657de0");armor.addColorStop(1,"#242c62");ctx.fillStyle=armor;ctx.beginPath();ctx.moveTo(-12,-59);ctx.lineTo(11,-59);ctx.lineTo(16,-29);ctx.lineTo(0,-22);ctx.lineTo(-16,-29);ctx.closePath();ctx.fill();
+ ctx.strokeStyle="#d9f7ff";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-9,-53);ctx.lineTo(0,-39);ctx.lineTo(9,-53);ctx.stroke();
+ ctx.strokeStyle="#f1c6ad";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(-12,-52);ctx.lineTo(-19,-36+Math.sin(t)*2);ctx.moveTo(12,-52);ctx.lineTo(19,-39);ctx.stroke();
+ ctx.fillStyle="#f4c9b0";ctx.beginPath();ctx.ellipse(0,-70,12,14,0,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle=skin==="ember"?"#773a34":"#29335f";ctx.beginPath();ctx.moveTo(-13,-72);ctx.quadraticCurveTo(-18,-94,1,-91);ctx.quadraticCurveTo(17,-91,13,-69);ctx.lineTo(7,-78);ctx.lineTo(0,-72);ctx.lineTo(-8,-78);ctx.closePath();ctx.fill();
+ ctx.fillStyle="#f8f5ff";ctx.fillRect(3,-72,5,3);ctx.fillStyle="#28345d";ctx.fillRect(6,-72,2,3);ctx.fillStyle=skin==="neon"?"#8effff":"#ffd77b";ctx.beginPath();ctx.arc(0,-86,3,0,Math.PI*2);ctx.fill();
+ ctx.strokeStyle=skin==="neon"?"#8effff":"#bceeff";ctx.lineWidth=3;ctx.shadowColor="#69eaff";ctx.shadowBlur=9;ctx.beginPath();ctx.arc(25,-45,15,-1.25,1.25);ctx.stroke();ctx.shadowBlur=0;
+ if(p.shield>0){ctx.strokeStyle="#6beaff";ctx.lineWidth=3;ctx.shadowColor="#55eaff";ctx.shadowBlur=15;ctx.beginPath();ctx.ellipse(0,-47,31,47,0,0,Math.PI*2);ctx.stroke();ctx.shadowBlur=0}
+ ctx.restore()};
+ drawF(battle.me,"#557eff",selectedSkin);
+ const enemy=battle.mode==="pvp"&&battle.remote?.players?battle.remote.players[1-battle.index]:battle.enemy;
+ drawF(enemy||battle.enemy,"#ff628d","default");
+ renderEffects(floor);
+ $("myHp").style.width=Math.max(0,battle.me.hp)+"%";$("enemyHp").style.width=Math.max(0,(enemy?.hp??battle.enemy.hp))+"%";
+ $("myScore").textContent=battle.scores[battle.index]+" KILL";$("enemyScore").textContent=battle.scores[1-battle.index]+" KILL";$("scoreHud").textContent=battle.scores.join(" - ");$("roundHud").textContent="ROUND "+battle.round+" / 5";
+ const sec=Math.floor((Date.now()-battle.start)/1000);$("timerHud").textContent=String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0");
+}
+let previousFrame=0;
+function loop(timestamp=performance.now()){
+ if(!battle||battle.ended)return;
+ const wanted=Math.min(targetFps,measuredHz||60),interval=1000/wanted;
+ if(previousFrame&&timestamp-previousFrame<interval-1){gameLoop=requestAnimationFrame(loop);return}
+ const dt=previousFrame?Math.min((timestamp-previousFrame)/16.6667,2):1;previousFrame=timestamp;
+ const me=battle.me,en=battle.enemy,h=heroes.find(x=>x.id===selectedHero)||heroes[0];
+ me.vx=touch.x*h.speed;if(keys.ArrowLeft||keys.a)me.vx=-h.speed;if(keys.ArrowRight||keys.d)me.vx=h.speed;
+ me.x=Math.max(28,Math.min(innerWidth-28,me.x+me.vx*dt));me.y+=me.vy*dt;me.vy-=.65*dt;if(me.y<=0){me.y=0;me.vy=0;me.ground=true}
+ if(battle.mode==="bot"){
+  const dx=me.x-en.x;en.face=dx>0?1:-1;en.vx=Math.abs(dx)>82?Math.sign(dx)*2:0;en.x=Math.max(28,Math.min(innerWidth-28,en.x+en.vx*dt));
+  if(Math.abs(dx)<90&&Math.random()<.025*dt)hit(en,me,7);
+  if(Math.abs(dx)>260&&Math.random()<.008*dt)en.x-=Math.sign(dx)*35;
+ }else if(battle.remote?.players){const rp=battle.remote.players[1-battle.index];if(rp){en.x=rp.x??en.x;en.y=rp.y??0;en.hp=rp.hp??en.hp;en.shield=rp.shield??0}}
+ me.face=en.x>me.x?1:-1;if(me.shield>0)me.shield=Math.max(0,me.shield-dt/60);
+ updateEffects(dt);
+ draw();gameLoop=requestAnimationFrame(loop);
+}
+function hit(from,to,damage){
+ if(to.shield>0)return;
+ to.hp=Math.max(0,to.hp-damage);
+ addBurst(to.x,to.y+45,"#ffcf8b",9,3);addRing(to.x,to.y+45,"#ff9b80",24);
+ soundCombo("impact");if(to===battle.me)vibrate(45);
+ if(to.hp===0)roundWin(from===battle.me?0:1);
+}
+function currentEnemy(){return battle.mode==="pvp"&&battle.remote?.players?battle.remote.players[1-battle.index]:battle.enemy}
+function attack(){
+ if(!battle||battle.ended)return;const now=Date.now();if(now-battle.lastAttack<430)return;battle.lastAttack=now;
+ const enemy=currentEnemy();soundCombo("arrow");
+ shootArrow(battle.me,enemy,heroes.find(x=>x.id===selectedHero).damage,0,"basic");
+ addBurst(battle.me.x+battle.me.face*23,battle.me.y+48,"#b9f6ff",4,2);
+}
+function useSkill(n){
+ if(!battle||battle.ended)return;
+ const now=Date.now(),cd=[0,5000,8000,18000][n];
+ if(now<(battle.cooldowns["s"+n]||0)){toast("Skill masih cooldown");return}
+ battle.cooldowns["s"+n]=now+cd;
+ const cdLabel=$("cd"+n);cdLabel.textContent=Math.ceil(cd/1000)+"s";
+ const ticker=setInterval(()=>{if(!battle||battle.ended||Date.now()>=battle.cooldowns["s"+n]){cdLabel.textContent="";clearInterval(ticker)}else cdLabel.textContent=Math.ceil((battle.cooldowns["s"+n]-Date.now())/1000)+"s"},200);
+ const enemy=currentEnemy(),dir=battle.me.face||1;
+ if(n===1){
+  soundCombo("skill");addRing(battle.me.x,battle.me.y+45,"#9beeff",54);
+  [-.13,0,.13].forEach((spread,i)=>setTimeout(()=>{if(battle&&!battle.ended){shootArrow(battle.me,enemy,11,spread,"skill");sound(640+i*90,.08,"triangle",.045,350)}},i*95));
+  addBurst(battle.me.x+dir*28,battle.me.y+50,"#8cecff",18,4);
+ }
+ if(n===2){
+  soundCombo("skill");const oldX=battle.me.x;
+  battle.me.x=Math.max(30,Math.min(innerWidth-30,battle.me.x+dir*125));
+  battle.me.vx=dir*7;addRing(oldX,battle.me.y+38,"#b78cff",42);addRing(battle.me.x,battle.me.y+42,"#9b8bff",62);
+  addBurst((oldX+battle.me.x)/2,battle.me.y+48,"#c8a6ff",24,6);
+  if(Math.abs(battle.me.x-enemy.x)<155)hit(battle.me,enemy,24);
+ }
+ if(n===3){
+  soundCombo("ultimate");battle.flash=.48;battle.shake=12;
+  addRing(enemy.x,enemy.y+48,"#fff0a6",150);addRing(enemy.x,enemy.y+48,"#ff83c7",95);
+  addBurst(enemy.x,enemy.y+50,"#ffe7a1",55,9);battle.me.shield=2.5;
+  for(let i=0;i<9;i++)setTimeout(()=>{if(battle&&!battle.ended){const fake={x:enemy.x+(Math.random()-.5)*150,y:enemy.y+170};shootArrow(fake,enemy,6,0,"ultimate");sound(520+i*35,.07,"sawtooth",.035,180)}},i*85);
+  setTimeout(()=>{if(battle&&!battle.ended){hit(battle.me,enemy,26);addBurst(enemy.x,enemy.y+45,"#fff0a6",45,8);addRing(enemy.x,enemy.y+45,"#fff0a6",180)}},900);
+ }
+ vibrate(n===3?100:45);
+}
+function shield(){if(!battle||battle.ended)return;if(battle.me.shield>0)return;battle.me.shield=5;const b=$("shield");b.classList.add("cool");b.disabled=true;setTimeout(()=>{b.classList.remove("cool");b.disabled=false},10000);sound(620,.15)}
+function jump(){if(battle?.me.ground){battle.me.vy=11;battle.me.ground=false;sound(250,.08)}}
+$("attack").onpointerdown=e=>{e.preventDefault();if(audioCtx?.state==="suspended")audioCtx.resume();attack()};$("skill1").onclick=()=>{if(audioCtx?.state==="suspended")audioCtx.resume();useSkill(1)};$("skill2").onclick=()=>{if(audioCtx?.state==="suspended")audioCtx.resume();useSkill(2)};$("skill3").onclick=()=>{if(audioCtx?.state==="suspended")audioCtx.resume();useSkill(3)};$("shield").onclick=shield;$("jump").onclick=jump;
+function stickMove(e){const r=$("stickArea").getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,len=Math.hypot(dx,dy),m=Math.min(35,len),a=Math.atan2(dy,dx);$("stick").style.left=(r.width/2-24+Math.cos(a)*m)+"px";$("stick").style.top=(r.height/2-24+Math.sin(a)*m)+"px";touch.x=Math.abs(dx)<12?0:Math.sign(dx)*Math.min(1,Math.abs(dx)/35)}
+$("stickArea").onpointerdown=e=>{$("stickArea").setPointerCapture(e.pointerId);stickMove(e)};$("stickArea").onpointermove=e=>{if(e.buttons)stickMove(e)};$("stickArea").onpointerup=()=>{touch.x=0;$("stick").style.left=($("stickArea").clientWidth/2-24)+"px";$("stick").style.top=($("stickArea").clientHeight/2-24)+"px"};$("stickArea").onpointercancel=$("stickArea").onpointerup;
+addEventListener("keydown",e=>{keys[e.key]=true;if(e.key===" "){e.preventDefault();jump()}if(e.key==="j")attack();if(e.key==="1")useSkill(1);if(e.key==="2")useSkill(2);if(e.key==="3")useSkill(3);if(e.key==="k")shield()});addEventListener("keyup",e=>keys[e.key]=false);
+function roundWin(winner){if(!battle||battle.ended)return;battle.scores[winner]++;sound(winner===0?980:150,.4);if(battle.scores[winner]>=3){finish(winner===battle.index||battle.mode==="bot"&&winner===0);return}battle.round++;battle.me.hp=100;battle.enemy.hp=100;battle.me.x=160;battle.enemy.x=innerWidth-160;battle.me.shield=0;battle.enemy.shield=0;$("battleMsg").textContent="ROUND "+battle.round;setTimeout(()=>{$("battleMsg").textContent="";countdown()},900)}
+async function finish(win){battle.ended=true;const reward=win?180:65;try{const ref=doc(db,"users",user.uid);await runTransaction(db,async tx=>{const s=await tx.get(ref),d=s.data();tx.update(ref,{gold:(d.gold||0)+reward,wins:(d.wins||0)+(win?1:0)})});profile.gold+=reward;if(win)profile.wins=(profile.wins||0)+1;updateProfileUI()}catch(e){console.warn(e)}
+ $("result").style.display="grid";$("resultIcon").textContent=win?"🏆":"💫";$("resultTitle").textContent=win?"VICTORY":"DEFEAT";$("resultText").textContent=`Kamu mendapatkan ${reward} gold. Skor ${battle.scores.join(" - ")}.`;sound(win?1000:130,.5)}
+async function syncState(){if(!battle?.matchId)return;const ref=doc(db,"matches",battle.matchId);await updateDoc(ref,{["state.players."+battle.index]:{x:battle.me.x,y:battle.me.y,hp:battle.me.hp,shield:battle.me.shield},["state.scores"]:battle.scores,["state.round"]:battle.round})}
+function endBattle(){cleanupMatch();if(document.fullscreenElement)document.exitFullscreen?.().catch(()=>{});screen.orientation?.unlock?.();show("home")}
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&battle?.mode==="pvp")toast("Kembali ke game agar koneksi pertandingan tetap aktif.")});
+</script>
+</body></html>
